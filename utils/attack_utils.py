@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+from tqdm import tqdm
 
 
 class AttackUtils(object):
@@ -14,7 +15,7 @@ class AttackUtils(object):
         test_acc = 0
         n = 0
         with torch.no_grad():
-            for i, (X, y) in enumerate(test_loader):
+            for i, (X, y, batch_idx) in enumerate(tqdm(test_loader)):
                 X, y = X.cuda(), y.cuda()
                 output = model(X + torch.matmul(U[i].reshape(X.shape[0], -1), V).reshape(X.shape))
                 loss = F.cross_entropy(output, y)
