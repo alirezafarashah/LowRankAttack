@@ -115,6 +115,7 @@ def main():
             U.append(Ui)
 
             iter_count += 1
+            train_n += y.size(0)
 
         if args.validation:
             test_loss, test_acc = attack_utils.evaluate_low_rank(model, V, U, train_loader)
