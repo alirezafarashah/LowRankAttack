@@ -62,7 +62,7 @@ def main():
     if not os.path.exists(model_path):
         raise ValueError('Pretrained model does not exist.')
 
-    model.load_state_dict(model_path)
+    model.load_state_dict(torch.load(model_path))
     model.eval()
 
     lambda_1 = args.lambda_1
