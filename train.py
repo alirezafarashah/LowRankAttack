@@ -84,10 +84,9 @@ def main():
         for i, (X, y, batch_idx) in enumerate(tqdm(train_loader)):
             X, y = X.cuda(), y.cuda()
             Ui = torch.zeros_like(X).cuda()
-            if args.unif > 0:
-                for j in range(len(epsilon)):
-                    Ui[:, j, :, :].uniform_(-epsilon[j][0][0].item(),
-                                            epsilon[j][0][0].item())
+            for j in range(len(epsilon)):
+                Ui[:, j, :, :].uniform_(-epsilon[j][0][0].item(),
+                                        epsilon[j][0][0].item())
 
             # Ui optimization step
             V.requires_grad = False
