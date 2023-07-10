@@ -77,9 +77,6 @@ def main():
     iter_count = 0
     for epoch in range(args.epochs):
         start_epoch_time = time.time()
-        train_loss = 0
-        train_acc = 0
-        train_n = 0
         U = []
         for i, (X, y, batch_idx) in enumerate(tqdm(train_loader)):
             X, y = X.cuda(), y.cuda()
@@ -115,14 +112,13 @@ def main():
             U.append(Ui)
 
             iter_count += 1
-            train_n += y.size(0)
 
         if args.validation:
             test_loss, test_acc = attack_utils.evaluate_low_rank(model, V, U, train_loader)
             print(f"test loss: {test_loss}, test acc: {test_acc}")
 
         epoch_time = time.time()
-        print(epoch, epoch_time - start_epoch_time, train_loss / train_n, train_acc / train_n)
+        print(epoch, epoch_time - start_epoch_time)
 
     train_time = time.time()
     torch.save(V, args.save_path)
