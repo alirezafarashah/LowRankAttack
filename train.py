@@ -104,7 +104,6 @@ def train():
             loss = F.cross_entropy(output, y) - reg_term1 - reg_term2
             grad = torch.autograd.grad(loss, V)[0]
             grad = grad.detach()
-            print(grad.shape)
             V = V + v_rate * grad
             Ui = Ui.detach()
             V = V.detach()
