@@ -121,7 +121,7 @@ def train():
         print(epoch, epoch_time - start_epoch_time)
 
     train_time = time.time()
-    torch.save(V, args.save_path)
+    torch.save(V, args.save_path + "V.pt")
 
     print('Total train time: %.4f minutes', (train_time - start_train_time) / 60)
 
