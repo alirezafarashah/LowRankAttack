@@ -64,6 +64,8 @@ def train():
     model.load_state_dict(torch.load(model_path))
     print("Pretrained model loaded successfully.")
     model.eval()
+    test_loss, test_acc = attack_utils.evaluate_model(model, test_loader)
+    print(f"Evaluate model on clean dataset, test loss: {test_loss}, test acc: {test_acc}")
 
     lambda_1 = args.lambda_1
     lambda_2 = args.lambda_2

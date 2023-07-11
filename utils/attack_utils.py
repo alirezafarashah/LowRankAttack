@@ -23,3 +23,17 @@ class AttackUtils(object):
                 test_acc += (output.max(1)[1] == y).sum().item()
                 n += y.size(0)
         return test_loss / n, test_acc / n
+
+    def evaluate_model(self, model, test_loader):
+        test_loss = 0
+        test_acc = 0
+        n = 0
+        with torch.no_grad():
+            for i, (X, y, batch_idx) in enumerate(tqdm(test_loader)):
+                X, y = X.cuda(), y.cuda()
+                output = model(X)
+                loss = F.cross_entropy(output, y)
+                test_loss += loss.item() * y.size(0)
+                test_acc += (output.max(1)[1] == y).sum().item()
+                n += y.size(0)
+        return test_loss / n, test_acc / n
