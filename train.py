@@ -72,7 +72,7 @@ def train():
     u_rate = args.u_rate
     v_rate = args.v_rate
     d = data_utils.img_size[0] * data_utils.img_size[1] * CHANNELS
-    V = ((2 * args.epsilon / 255.) * torch.rand(d, d) - args.epsilon / 255.).cuda()
+    V = torch.rand(d, d)
 
     start_train_time = time.time()
     print('Epoch \t Seconds')
@@ -96,6 +96,7 @@ def train():
                 loss = F.cross_entropy(output, y) - reg_term1
                 grad = torch.autograd.grad(loss, Ui)[0]
                 grad = grad.detach()
+                print(grad.shape)
                 Ui = Ui + u_rate * grad
                 Ui = Ui.detach()
 
@@ -108,6 +109,7 @@ def train():
             loss = F.cross_entropy(output, y) - reg_term1 - reg_term2
             grad = torch.autograd.grad(loss, V)[0]
             grad = grad.detach()
+            print(grad.shape)
             V = V + v_rate * grad
             Ui = Ui.detach()
             V = V.detach()
