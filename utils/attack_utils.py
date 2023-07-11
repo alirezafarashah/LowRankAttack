@@ -17,7 +17,7 @@ class AttackUtils(object):
         with torch.no_grad():
             for i, (X, y, batch_idx) in enumerate(tqdm(test_loader)):
                 X, y = X.cuda(), y.cuda()
-                output = model(X + torch.matmul(U[i].reshape(X.shape[0], -1), V).reshape(X.shape))
+                output = model(X + torch.matmul(U[i], V).reshape(X.shape))
                 loss = F.cross_entropy(output, y)
                 test_loss += loss.item() * y.size(0)
                 test_acc += (output.max(1)[1] == y).sum().item()
