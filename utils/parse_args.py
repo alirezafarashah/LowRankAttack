@@ -21,9 +21,6 @@ def get_args():
 
     # Adversarial training and evaluation settings
     parser.add_argument('--epsilon', default=8, type=int)
-
-    parser.add_argument('--robust_test_size', default=-1, type=int,
-                        help='Number of samples to be used for robust testing, Default: -1 will use all samples')
     parser.add_argument('--validation', action='store_true',
                         help='Validate attack')
 

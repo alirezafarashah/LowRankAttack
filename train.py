@@ -16,7 +16,7 @@ from utils.parse_args import get_args
 CHANNELS = 3
 
 
-def main():
+def train():
     global U, V
     args = get_args()
     print(args)
@@ -40,8 +40,7 @@ def main():
     (train_loader, test_loader, robust_test_loader,
      valid_loader, train_idx, valid_idx) = data_utils.get_indexed_loaders(args.data_dir,
                                                                           args.batch_size,
-                                                                          valid_size=valid_size,
-                                                                          robust_test_size=args.robust_test_size)
+                                                                          valid_size=valid_size)
     # Adv training and test settings
     epsilon = (args.epsilon / 255.) / data_utils.std
     inner_steps = args.inner_steps
@@ -63,6 +62,7 @@ def main():
         raise ValueError('Pretrained model does not exist.')
 
     model.load_state_dict(torch.load(model_path))
+    print("Pretrained model loaded successfully.")
     model.eval()
 
     lambda_1 = args.lambda_1
@@ -73,7 +73,7 @@ def main():
     V = torch.zeros(d, d).cuda()
 
     start_train_time = time.time()
-    print('Epoch \t Seconds \t LR \t \t Train Loss \t Train Acc')
+    print('Epoch \t Seconds')
     iter_count = 0
     for epoch in range(args.epochs):
         start_epoch_time = time.time()
@@ -126,11 +126,11 @@ def main():
     print('Total train time: %.4f minutes', (train_time - start_train_time) / 60)
 
     # Evaluation final tensor
-    print('Training finished, starting evaluation')
+    print('Training finished, starting evaluation.')
     test_loss, test_acc = attack_utils.evaluate_low_rank(model, V, U, train_loader)
     print(f"test loss: {test_loss}, test acc: {test_acc}")
-    print('Finished evaluating final model')
+    print('Finished evaluating final tensor.')
 
 
 if __name__ == "__main__":
-    main()
+    train()
