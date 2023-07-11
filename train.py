@@ -70,7 +70,7 @@ def train():
     u_rate = args.u_rate
     v_rate = args.v_rate
     d = data_utils.img_size[0] * data_utils.img_size[1] * CHANNELS
-    V = torch.zeros(d, d).cuda()
+    V = ((2 * args.epsilon / 255.) * torch.rand(d, d) - args.epsilon / 255.).cuda()
 
     start_train_time = time.time()
     print('Epoch \t Seconds')
