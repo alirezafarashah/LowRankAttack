@@ -82,12 +82,7 @@ def train():
         U = []
         for i, (X, y, batch_idx) in enumerate(tqdm(train_loader)):
             X, y = X.cuda(), y.cuda()
-            print(X.shape)
-            Ui = torch.zeros_like(X.shape[0], X.shape[1], X.shape[2], 100).cuda()
-            for j in range(len(epsilon)):
-                Ui[:, j, :, :].uniform_(-epsilon[j][0][0].item(),
-                                        epsilon[j][0][0].item())
-
+            Ui = torch.rand(X.shape[0], 100).cuda()
             # Ui optimization step
             V.requires_grad = False
             for j in range(inner_steps):
