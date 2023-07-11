@@ -71,7 +71,7 @@ def train():
     lambda_2 = args.lambda_2
     u_rate = args.u_rate
     v_rate = args.v_rate
-    d = data_utils.img_size[0] * data_utils.img_size[1] * CHANNELS
+    d = 100 * data_utils.img_size[1] * CHANNELS
     V = torch.rand(d, d).cuda()
 
     start_train_time = time.time()
@@ -82,7 +82,8 @@ def train():
         U = []
         for i, (X, y, batch_idx) in enumerate(tqdm(train_loader)):
             X, y = X.cuda(), y.cuda()
-            Ui = torch.zeros_like(X).cuda()
+            print(X.shape)
+            Ui = torch.zeros_like(X.shape[0], X.shape[1], X.shape[2], 100).cuda()
             for j in range(len(epsilon)):
                 Ui[:, j, :, :].uniform_(-epsilon[j][0][0].item(),
                                         epsilon[j][0][0].item())
