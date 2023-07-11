@@ -71,8 +71,8 @@ def train():
     lambda_2 = args.lambda_2
     u_rate = args.u_rate
     v_rate = args.v_rate
-    d = 100 * data_utils.img_size[1] * CHANNELS
-    V = torch.rand(d, d).cuda()
+    d = data_utils.img_size[0] * data_utils.img_size[1] * CHANNELS
+    V = torch.rand(100, d).cuda()
 
     start_train_time = time.time()
     print('Epoch \t Seconds')
