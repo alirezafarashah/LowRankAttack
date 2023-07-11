@@ -113,7 +113,7 @@ def train():
 
         if args.validation:
             print(torch.sum(torch.norm(Ui, p=2, dim=1)))
-            print(torch.norm(V, p=2))
+            print(torch.norm(V, p='fro'))
             test_loss, test_acc = attack_utils.evaluate_low_rank(model, V, U, train_loader)
             print(f"test loss: {test_loss}, test acc: {test_acc}")
 
