@@ -42,9 +42,6 @@ def train():
      valid_loader, train_idx, valid_idx) = data_utils.get_indexed_loaders(args.data_dir,
                                                                           args.batch_size,
                                                                           valid_size=valid_size)
-    # Adv training and test settings
-    epsilon = (args.epsilon / 255.) / data_utils.std
-    inner_steps = args.inner_steps
 
     # Define architecture
     args.num_classes = data_utils.max_label + 1  # Labels start from 0
@@ -68,10 +65,11 @@ def train():
     test_loss, test_acc = attack_utils.evaluate_model(model, test_loader)
     print(f"Evaluate model on clean dataset, test loss: {test_loss}, test acc: {test_acc}")
 
+    inner_steps = args.inner_steps  # > 100
     lambda_1 = args.lambda_1
     lambda_2 = args.lambda_2
-    u_rate = args.u_rate
-    v_rate = args.v_rate
+    u_rate = args.u_rate  # < 1/(2 * lambda)
+    v_rate = args.v_rate  # < 1/(2 * lambda)
     d = data_utils.img_size[0] * data_utils.img_size[1] * CHANNELS
     max_norm = math.sqrt(args.epsilon / 255.)
     V = (2 * max_norm * torch.rand(100, d) - max_norm).cuda()
@@ -94,7 +92,7 @@ def train():
                 loss = F.cross_entropy(output, y) - lambda_1 * reg_term1
                 grad = torch.autograd.grad(loss, Ui)[0]
                 grad = grad.detach()
-                Ui = Ui + u_rate * torch.sign(grad)
+                Ui = Ui + u_rate * grad
                 Ui = Ui.detach()
 
             # V optimization step
@@ -106,7 +104,7 @@ def train():
             loss = F.cross_entropy(output, y) - lambda_1 * reg_term1 - lambda_2 * reg_term2
             grad = torch.autograd.grad(loss, V)[0]
             grad = grad.detach()
-            V = V + v_rate * torch.sign(grad)
+            V = V + v_rate * grad
             Ui = Ui.detach()
             V = V.detach()
             U.append(Ui)
