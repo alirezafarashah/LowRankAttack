@@ -72,7 +72,8 @@ def train():
     u_rate = args.u_rate
     v_rate = args.v_rate
     d = data_utils.img_size[0] * data_utils.img_size[1] * CHANNELS
-    V = torch.rand(100, d).cuda()
+    max_norm = torch.sqrt(args.epsilon / 255.)
+    V = (2 * max_norm * torch.rand(100, d) - max_norm).cuda()
 
     start_train_time = time.time()
     print('Epoch \t Seconds')
@@ -82,7 +83,7 @@ def train():
         U = []
         for i, (X, y, batch_idx) in enumerate(tqdm(train_loader)):
             X, y = X.cuda(), y.cuda()
-            Ui = torch.rand(X.shape[0], 100).cuda()
+            Ui = (2 * max_norm * torch.rand(X.shape[0], 100) - max_norm).cuda()
             # Ui optimization step
             V.requires_grad = False
             for j in range(inner_steps):
