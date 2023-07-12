@@ -17,7 +17,7 @@ def get_args():
     # Training schedule settings
     parser.add_argument('--batch-size', default=128, type=int)
     parser.add_argument('--data-dir', default='/path/to/datasets/', type=str)
-    parser.add_argument('--epochs', default=30, type=int)
+    parser.add_argument('--epochs', default=15, type=int)
 
     # Adversarial training and evaluation settings
     parser.add_argument('--epsilon', default=8, type=int)
