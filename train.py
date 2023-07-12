@@ -116,8 +116,8 @@ def train():
         if args.validation:
             test_loss, test_acc = attack_utils.evaluate_low_rank(model, V, U, train_loader)
             print(f"test loss: {test_loss}, test acc: {test_acc}")
-            print("l2 norm of Ui: ", torch.sum(torch.norm(Ui, p=2, dim=1)))
-            print("fro norm of V: ", torch.norm(V, p='fro'))
+            print("l2 norm of Ui: ", torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2)))
+            print("fro norm of V: ", torch.pow(torch.norm(V, p='fro'), 2))
 
         epoch_time = time.time()
         print(epoch, epoch_time - start_epoch_time)
