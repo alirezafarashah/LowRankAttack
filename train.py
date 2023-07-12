@@ -90,8 +90,8 @@ def train():
             for j in range(inner_steps):
                 Ui.requires_grad = True
                 output = model(X + torch.matmul(Ui, V).reshape(X.shape))
-                reg_term1 = lambda_1 * torch.sum(torch.norm(Ui, p=2, dim=1))
-                loss = F.cross_entropy(output, y) - reg_term1
+                reg_term1 = torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2))
+                loss = F.cross_entropy(output, y) - lambda_1 * reg_term1
                 grad = torch.autograd.grad(loss, Ui)[0]
                 grad = grad.detach()
                 Ui = Ui + u_rate * torch.sign(grad)
@@ -101,9 +101,9 @@ def train():
             V.requires_grad = True
             Ui.requires_grad = False
             output = model(X + torch.matmul(Ui, V).reshape(X.shape))
-            reg_term1 = lambda_1 * torch.sum(torch.norm(Ui, p=2, dim=1))
-            reg_term2 = lambda_2 * torch.norm(V, p='fro')
-            loss = F.cross_entropy(output, y) - reg_term1 - reg_term2
+            reg_term1 = torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2))
+            reg_term2 = torch.pow(torch.norm(V, p='fro'), 2)
+            loss = F.cross_entropy(output, y) - lambda_1 * reg_term1 - lambda_2 * reg_term2
             grad = torch.autograd.grad(loss, V)[0]
             grad = grad.detach()
             V = V + v_rate * torch.sign(grad)
