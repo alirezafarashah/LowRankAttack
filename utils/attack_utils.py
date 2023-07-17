@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
 from tqdm import tqdm
+import numpy as np
 
 
 class AttackUtils(object):
@@ -9,6 +10,10 @@ class AttackUtils(object):
         self.lower_limit = lower_limit
         self.upper_limit = upper_limit
         self.std = std
+
+    def clamp_operator_norm(self, V):
+        V_array = V.detach().cpu().numpy()
+        return torch.div(V, max(1, np.linalg.norm(V_array, 2)))
 
     def evaluate_low_rank(self, model, V, U, test_loader):
         test_loss = 0

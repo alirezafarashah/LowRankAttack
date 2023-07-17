@@ -67,13 +67,12 @@ def train():
 
     inner_steps = args.inner_steps  # > 100
     lambda_1 = args.lambda_1
-    lambda_2 = args.lambda_2
     u_rate = args.u_rate  # < 1/(2 * lambda)
     v_rate = args.v_rate  # < 1/(2 * lambda)
     d = data_utils.img_size[0] * data_utils.img_size[1] * CHANNELS
-    max_norm = math.sqrt(args.epsilon / 255.)
-    V = (2 * max_norm * torch.rand(100, d) - max_norm).cuda()
-
+    max_norm = args.epsilon / 255.
+    V = torch.rand(100, d).cuda()
+    V = attack_utils.clamp_operator_norm(V)
     start_train_time = time.time()
     print('Epoch \t Seconds')
     iter_count = 0
@@ -99,14 +98,13 @@ def train():
             V.requires_grad = True
             Ui.requires_grad = False
             output = model(X + torch.matmul(Ui, V).reshape(X.shape))
-            reg_term1 = torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2))
-            reg_term2 = torch.pow(torch.norm(V, p='fro'), 2)
-            loss = F.cross_entropy(output, y) - lambda_1 * reg_term1 - lambda_2 * reg_term2
+            loss = F.cross_entropy(output, y)
             grad = torch.autograd.grad(loss, V)[0]
             grad = grad.detach()
             V = V + v_rate * grad
-            Ui = Ui.detach()
+            V = attack_utils.clamp_operator_norm(V)
             V = V.detach()
+            Ui = Ui.detach()
             U.append(Ui)
 
             iter_count += 1

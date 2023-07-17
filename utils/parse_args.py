@@ -36,6 +36,5 @@ def get_args():
     parser.add_argument('--u-rate', default=1e-3, type=float, help='Learning rate for Ui optimization')
     parser.add_argument('--v-rate', default=1e-3, type=float, help='Learning rate for V optimization')
     parser.add_argument('--lambda-1', default=1e-3, type=float, help='lambda-1 parameter in loss')
-    parser.add_argument('--lambda-2', default=1e-3, type=float, help='lambda-2 parameter in loss')
 
     return parser.parse_args()
