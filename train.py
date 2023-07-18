@@ -1,7 +1,7 @@
 import os
 import time
 from tqdm import tqdm
-import math
+import logging
 
 import numpy as np
 import torch
@@ -15,6 +15,7 @@ from utils.attack_utils import *
 from utils.parse_args import get_args
 
 CHANNELS = 3
+logger = logging.getLogger(__name__)
 
 
 def train():
@@ -29,6 +30,13 @@ def train():
         data_utils = CIFAR100Utils()
     else:
         raise ValueError('Unsupported dataset.')
+
+    logging.basicConfig(
+        format='[%(asctime)s] - %(message)s',
+        datefmt='%Y/%m/%d %H:%M:%S',
+        level=logging.INFO,
+        filename='output.log')
+    logger.info(args)
 
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -57,9 +65,11 @@ def train():
         raise ValueError('Pretrained model does not exist.')
 
     model.load_state_dict(torch.load(model_path))
+    logger.info("Pretrained model loaded successfully.")
     print("Pretrained model loaded successfully.")
     model.eval()
     test_loss, test_acc = evaluate_model(model, test_loader)
+    logger.info(f"Evaluate model on clean dataset, test loss: {test_loss}, test acc: {test_acc}")
     print(f"Evaluate model on clean dataset, test loss: {test_loss}, test acc: {test_acc}")
 
     inner_steps = args.inner_steps  # > 100
@@ -71,6 +81,7 @@ def train():
     V = torch.rand(100, d).cuda()
     V = clamp_operator_norm(V)
     start_train_time = time.time()
+    logger.info('Epoch \t Seconds')
     print('Epoch \t Seconds')
     iter_count = 0
     for epoch in range(args.epochs):
@@ -108,8 +119,11 @@ def train():
 
         if args.validation:
             test_loss, test_acc = evaluate_low_rank(model, V, U, train_loader)
+            logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
             print(f"test loss: {test_loss}, test acc: {test_acc}")
+            logger.info("l2 norm of Ui: ", torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2)))
             print("l2 norm of Ui: ", torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2)))
+            logger.info("fro norm of V: ", torch.pow(torch.norm(V, p='fro'), 2))
             print("fro norm of V: ", torch.pow(torch.norm(V, p='fro'), 2))
 
         epoch_time = time.time()
@@ -117,13 +131,16 @@ def train():
 
     train_time = time.time()
     torch.save(V, args.save_path + "V.pt")
-
+    logger.info('Total train time: %.4f minutes', (train_time - start_train_time) / 60)
     print('Total train time: %.4f minutes', (train_time - start_train_time) / 60)
 
     # Evaluation final tensor
+    logger.info("Training finished, starting evaluation.")
     print('Training finished, starting evaluation.')
     test_loss, test_acc = evaluate_low_rank(model, V, U, train_loader)
+    logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
     print(f"test loss: {test_loss}, test acc: {test_acc}")
+    logger.info('Finished evaluating final tensor.')
     print('Finished evaluating final tensor.')
 
 
