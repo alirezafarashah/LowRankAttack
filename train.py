@@ -11,7 +11,7 @@ from architectures.preact_resnet import PreActResNet18
 from architectures.wide_resnet import Wide_ResNet
 
 from utils.data_utils import CIFAR10Utils, CIFAR100Utils
-from utils.attack_utils import AttackUtils
+from utils.attack_utils import *
 from utils.parse_args import get_args
 
 CHANNELS = 3
@@ -29,9 +29,6 @@ def train():
         data_utils = CIFAR100Utils()
     else:
         raise ValueError('Unsupported dataset.')
-
-    print('Defining attack object')
-    attack_utils = AttackUtils(data_utils.lower_limit, data_utils.upper_limit, data_utils.std)
 
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -62,7 +59,7 @@ def train():
     model.load_state_dict(torch.load(model_path))
     print("Pretrained model loaded successfully.")
     model.eval()
-    test_loss, test_acc = attack_utils.evaluate_model(model, test_loader)
+    test_loss, test_acc = evaluate_model(model, test_loader)
     print(f"Evaluate model on clean dataset, test loss: {test_loss}, test acc: {test_acc}")
 
     inner_steps = args.inner_steps  # > 100
@@ -72,7 +69,7 @@ def train():
     d = data_utils.img_size[0] * data_utils.img_size[1] * CHANNELS
     max_norm = args.epsilon / 255.
     V = torch.rand(100, d).cuda()
-    V = attack_utils.clamp_operator_norm(V)
+    V = clamp_operator_norm(V)
     start_train_time = time.time()
     print('Epoch \t Seconds')
     iter_count = 0
@@ -102,7 +99,7 @@ def train():
             grad = torch.autograd.grad(loss, V)[0]
             grad = grad.detach()
             V = V + v_rate * grad
-            V = attack_utils.clamp_operator_norm(V)
+            V = clamp_operator_norm(V)
             V = V.detach()
             Ui = Ui.detach()
             U.append(Ui)
@@ -110,7 +107,7 @@ def train():
             iter_count += 1
 
         if args.validation:
-            test_loss, test_acc = attack_utils.evaluate_low_rank(model, V, U, train_loader)
+            test_loss, test_acc = evaluate_low_rank(model, V, U, train_loader)
             print(f"test loss: {test_loss}, test acc: {test_acc}")
             print("l2 norm of Ui: ", torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2)))
             print("fro norm of V: ", torch.pow(torch.norm(V, p='fro'), 2))
@@ -125,7 +122,7 @@ def train():
 
     # Evaluation final tensor
     print('Training finished, starting evaluation.')
-    test_loss, test_acc = attack_utils.evaluate_low_rank(model, V, U, train_loader)
+    test_loss, test_acc = evaluate_low_rank(model, V, U, train_loader)
     print(f"test loss: {test_loss}, test acc: {test_acc}")
     print('Finished evaluating final tensor.')
 
