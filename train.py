@@ -80,6 +80,7 @@ def train():
     max_norm = args.epsilon / 255.
     V = torch.rand(100, d).cuda()
     V = clamp_operator_norm(V)
+    print("fro norm of V: ", torch.pow(torch.norm(V, p='fro'), 2))
     start_train_time = time.time()
     logger.info('Epoch \t Seconds')
     print('Epoch \t Seconds')
