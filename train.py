@@ -84,7 +84,7 @@ def train():
     start_train_time = time.time()
     logger.info('Epoch \t Seconds')
     print('Epoch \t Seconds')
-    iter_count = 0
+
     for epoch in range(args.epochs):
         start_epoch_time = time.time()
         U = []
@@ -115,8 +115,6 @@ def train():
             V = V.detach()
             Ui = Ui.detach()
             U.append(Ui)
-
-            iter_count += 1
 
         if args.validation:
             test_loss, test_acc = evaluate_low_rank(model, V, U, train_loader)
