@@ -122,9 +122,9 @@ def train():
             test_loss, test_acc = evaluate_low_rank(model, V, U, train_loader)
             logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
             print(f"test loss: {test_loss}, test acc: {test_acc}")
-            logger.info("l2 norm of Ui: ", torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2)).item()[0])
+            logger.info("l2 norm of Ui: %.4f", torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2)).item())
             print("l2 norm of Ui: ", torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2)))
-            logger.info("fro norm of V: ", torch.pow(torch.norm(V, p='fro'), 2).item()[0])
+            logger.info("fro norm of V: %.4f", torch.pow(torch.norm(V, p='fro'), 2).item())
             print("fro norm of V: ", torch.pow(torch.norm(V, p='fro'), 2))
 
         epoch_time = time.time()
