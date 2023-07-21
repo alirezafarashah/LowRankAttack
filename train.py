@@ -96,8 +96,8 @@ def train():
             for j in range(inner_steps):
                 Ui.requires_grad = True
                 output = model(X + torch.matmul(Ui, V).reshape(X.shape))
-                reg_term1 = torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2))
-                loss = F.cross_entropy(output, y) - lambda_1 * reg_term1
+                # reg_term1 = torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2))
+                loss = F.cross_entropy(output, y)
                 grad = torch.autograd.grad(loss, Ui)[0]
                 grad = grad.detach()
                 Ui = Ui + u_rate * grad
@@ -116,7 +116,7 @@ def train():
             U.append(Ui)
 
         if args.validation:
-            test_loss, test_acc = evaluate_low_rank(model, V, U, train_loader)
+            test_loss, test_acc = evaluate_batch(model, V, Ui, X, y)
             logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
             print(f"test loss: {test_loss}, test acc: {test_acc}")
             logger.info("l2 norm of Ui: %.4f", torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2)).item())
