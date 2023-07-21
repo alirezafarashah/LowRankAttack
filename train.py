@@ -103,6 +103,7 @@ def train():
                 grad = torch.autograd.grad(loss, Ui)[0]
                 grad = grad.detach()
                 Ui = Ui + u_rate * grad
+                print(torch.norm(grad, p=2))
                 Ui = Ui.detach()
             test_loss, test_acc = evaluate_batch(model, V, Ui, X, y)
             print(f"test loss: {test_loss}, test acc: {test_acc}")
@@ -114,7 +115,6 @@ def train():
             grad = torch.autograd.grad(loss, V)[0]
             grad = grad.detach()
             V = V + v_rate * torch.sign(grad)
-            print(torch.norm(grad, p=2))
             V = clamp_operator_norm(V)
             V = V.detach()
             Ui = Ui.detach()
