@@ -102,9 +102,9 @@ def train():
                 loss = F.cross_entropy(output, y)
                 grad = torch.autograd.grad(loss, Ui)[0]
                 grad = grad.detach()
-                Ui = Ui + u_rate * grad
+                nextUi = Ui + u_rate * grad
                 print(torch.norm(grad, p=2))
-                Ui = Ui.detach()
+                Ui = nextUi.detach()
             test_loss, test_acc = evaluate_batch(model, V, Ui, X, y)
             print(f"test loss: {test_loss}, test acc: {test_acc}")
             # V optimization step
