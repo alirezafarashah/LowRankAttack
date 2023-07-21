@@ -91,21 +91,17 @@ def train():
         for i, (X, y, batch_idx) in enumerate(tqdm(train_loader)):
             X, y = X.cuda(), y.cuda()
             Ui = (2 * max_norm * torch.rand(X.shape[0], 100) - max_norm).cuda()
-            test_loss, test_acc = evaluate_batch(model, V, Ui, X, y)
-            print(f"test loss: {test_loss}, test acc: {test_acc}")
             # Ui optimization step
             V.requires_grad = False
             for j in range(inner_steps):
                 Ui.requires_grad = True
                 output = model(X + torch.matmul(Ui, V).reshape(X.shape))
-                # reg_term1 = torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2))
-                loss = F.cross_entropy(output, y)
+                reg_term1 = torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2))
+                loss = F.cross_entropy(output, y) - lambda_1 * reg_term1
                 grad = torch.autograd.grad(loss, Ui)[0]
                 grad = grad.detach()
                 nextUi = Ui + u_rate * torch.sign(grad)
                 Ui = nextUi.detach()
-            test_loss, test_acc = evaluate_batch(model, V, Ui, X, y)
-            print(f"test loss: {test_loss}, test acc: {test_acc}")
             # V optimization step
             V.requires_grad = True
             Ui.requires_grad = False

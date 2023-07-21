@@ -9,6 +9,10 @@ def clamp_operator_norm(V):
     return torch.div(V, max(1, np.linalg.norm(V_array, 2)))
 
 
+def clamp(self, X, lower_limit, upper_limit):
+    return torch.max(torch.min(X, upper_limit), lower_limit)
+
+
 def evaluate_low_rank(model, V, U, test_loader):
     test_loss = 0
     test_acc = 0
