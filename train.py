@@ -102,7 +102,6 @@ def train():
                 grad = grad.detach()
                 Ui = Ui + u_rate * grad
                 Ui = Ui.detach()
-            print(torch.norm(grad, p=2))
             # V optimization step
             V.requires_grad = True
             Ui.requires_grad = False
