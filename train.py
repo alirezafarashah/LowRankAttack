@@ -114,6 +114,7 @@ def train():
             grad = torch.autograd.grad(loss, V)[0]
             grad = grad.detach()
             V = V + v_rate * torch.sign(grad)
+            print(torch.norm(grad, p=2))
             V = clamp_operator_norm(V)
             V = V.detach()
             Ui = Ui.detach()
