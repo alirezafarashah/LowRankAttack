@@ -100,8 +100,8 @@ def train():
                 loss = F.cross_entropy(output, y) - lambda_1 * reg_term1
                 grad = torch.autograd.grad(loss, Ui)[0]
                 grad = grad.detach()
-                Ui = Ui + u_rate * torch.sign(grad)
-                Ui = Ui.detach()
+                next_Ui = Ui + u_rate * torch.sign(grad)
+                Ui = next_Ui.detach()
             # V optimization step
             V.requires_grad = True
             Ui.requires_grad = False
