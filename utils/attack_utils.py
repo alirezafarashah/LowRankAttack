@@ -27,7 +27,7 @@ def evaluate_low_rank(model, V, U, test_loader):
 def evaluate_batch(model, V, Ui, X, y):
     test_loss = 0
     test_acc = 0
-    n = 0l
+    n = 0
     with torch.no_grad():
         X, y = X.cuda(), y.cuda()
         output = model(X + torch.matmul(Ui, V).reshape(X.shape))
