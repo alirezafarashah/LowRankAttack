@@ -117,6 +117,7 @@ def train():
             V = clamp_operator_norm(V)
             V = V.detach()
             Ui = Ui.detach()
+            print(batch_idx)
             U[batch_idx] = Ui
 
         if args.validation:
