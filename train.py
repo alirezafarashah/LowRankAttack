@@ -84,9 +84,10 @@ def train():
     start_train_time = time.time()
     logger.info('Epoch \t Seconds')
     print('Epoch \t Seconds')
-    U = []
-    data = []
+
     for epoch in range(args.epochs):
+        U = []
+        data = []
         start_epoch_time = time.time()
         for i, (X, y, batch_idx) in enumerate(train_loader):
             X, y = X.cuda(), y.cuda()
@@ -98,11 +99,11 @@ def train():
             for j in range(inner_steps):
                 Ui.requires_grad = True
                 output = model(X + torch.matmul(Ui, V).reshape(X.shape))
-                reg_term1 = torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2))
+                reg_term1 = torch.pow(torch.linalg.vector_norm(Ui), 2)
                 loss = F.cross_entropy(output, y) - lambda_1 * reg_term1
                 grad = torch.autograd.grad(loss, Ui)[0]
                 grad = grad.detach()
-                next_Ui = Ui + u_rate * torch.sign(grad)
+                next_Ui = Ui + u_rate * grad
                 Ui = next_Ui.detach()
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
@@ -113,30 +114,27 @@ def train():
             loss = F.cross_entropy(output, y)
             grad = torch.autograd.grad(loss, V)[0]
             grad = grad.detach()
-            V = V + v_rate * torch.sign(grad)
+            V = V + v_rate * grad
             V = clamp_operator_norm(V)
             V = V.detach()
             Ui = Ui.detach()
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
-            print("4. l2 norm of Ui: ", torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2)))
-            print("5. norm of UiV: ", torch.sum(torch.pow(torch.norm(torch.matmul(Ui, V), p=2, dim=1), 2)))
-            if epoch == args.epochs - 1:
-                U.append(Ui)
-                data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
-            # if i > 10:
-            #     test_loss, test_acc = evaluate_batch(model, V.detach().clone(), U[10], data[10][0],
-            #                                          data[10][1])
-            #     print(f"4. test loss for first data batch: {test_loss}, test acc: {test_acc}")
+            print("4. l2 norm of Ui: ", torch.pow(torch.linalg.vector_norm(Ui), 2))
+            print("5. norm of UiV: ", torch.pow(torch.linalg.vector_norm(torch.matmul(Ui, V)), 2))
+            U.append(Ui)
+            data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
 
         if args.validation:
-            test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
+            test_loss, test_acc = evaluate_low_rank(model, V, U, data)
             logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
             print(f"test loss: {test_loss}, test acc: {test_acc}")
-            logger.info("l2 norm of Ui: %.4f", torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2)).item())
-            print("l2 norm of Ui: ", torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2)))
-            logger.info("fro norm of V: %.4f", torch.pow(torch.norm(V, p='fro'), 2).item())
-            print("fro norm of V: ", torch.pow(torch.norm(V, p='fro'), 2))
+            Ui_norm_2 = torch.pow(torch.linalg.vector_norm(Ui), 2)
+            V_norm_f = torch.pow(torch.linalg.matrix_norm(V), 2)
+            logger.info("l2 norm of Ui: %.4f", Ui_norm_2.item())
+            print("l2 norm of Ui: ", Ui_norm_2)
+            logger.info("fro norm of V: %.4f", V_norm_f.item())
+            print("fro norm of V: ", V_norm_f)
 
         epoch_time = time.time()
         print(epoch, epoch_time - start_epoch_time)
