@@ -84,11 +84,10 @@ def train():
     start_train_time = time.time()
     logger.info('Epoch \t Seconds')
     print('Epoch \t Seconds')
-
+    U = []
+    data = []
     for epoch in range(args.epochs):
         start_epoch_time = time.time()
-        U = []
-        data = []
         for i, (X, y, batch_idx) in enumerate(train_loader):
             X, y = X.cuda(), y.cuda()
             Ui = (2 * max_norm * torch.rand(X.shape[0], 100) - max_norm).cuda()
@@ -120,7 +119,7 @@ def train():
             Ui = Ui.detach()
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
-            if epoch == 0:
+            if epoch == args.epochs - 1:
                 U.append(Ui)
                 data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
 
