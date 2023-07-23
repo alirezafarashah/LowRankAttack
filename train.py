@@ -118,8 +118,9 @@ def train():
             V = clamp_operator_norm(V)
             V = V.detach()
             Ui = Ui.detach()
-            U[i] = Ui
-            data[i] = (X.to(torch.device("cpu")), y.to(torch.device("cpu")))
+            if epoch == args.epochs - 1:
+                U[i] = Ui
+                data[i] = (X.to(torch.device("cpu")), y.to(torch.device("cpu")))
 
         if args.validation:
             test_loss, test_acc = evaluate_batch(model, V, Ui, X, y)
