@@ -77,8 +77,8 @@ def train():
     u_rate = args.u_rate  # < 1/(2 * lambda)
     v_rate = args.v_rate  # < 1/(2 * lambda)
     d = data_utils.img_size[0] * data_utils.img_size[1] * CHANNELS
-    epsilon = args.epsilon / 255.
-    max_norm = epsilon
+    epsilon = torch.tensor(args.epsilon / 255.).cuda()
+    max_norm = args.epsilon / 255.
     V = torch.rand(100, d).cuda()
     V = clamp_operator_norm(V)
     print("fro norm of V: ", torch.pow(torch.norm(V, p='fro'), 2))
