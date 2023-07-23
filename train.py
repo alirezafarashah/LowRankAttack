@@ -92,7 +92,7 @@ def train():
         for i, (X, y, batch_idx) in enumerate(train_loader):
             X, y = X.cuda(), y.cuda()
             Ui = (2 * max_norm * torch.rand(X.shape[0], 100) - max_norm).cuda()
-            test_loss, test_acc = evaluate_batch(model, V, Ui, X, y)
+            test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"test loss before train Ui: {test_loss}, test acc: {test_acc}")
             # Ui optimization step
             V.requires_grad = False
@@ -105,8 +105,8 @@ def train():
                 grad = grad.detach()
                 next_Ui = Ui + u_rate * torch.sign(grad)
                 Ui = next_Ui.detach()
-            test_loss, test_acc = evaluate_batch(model, V, Ui, X, y)
-            print(f"test loss after train Ui: {test_loss}, test acc: {test_acc}")
+            test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
+            print(f"test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
             # V optimization step
             V.requires_grad = True
             Ui.requires_grad = False
@@ -118,12 +118,14 @@ def train():
             V = clamp_operator_norm(V)
             V = V.detach()
             Ui = Ui.detach()
+            test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
+            print(f"test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
             if epoch == 0:
                 U.append(Ui)
                 data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
 
         if args.validation:
-            test_loss, test_acc = evaluate_batch(model, V, Ui, X, y)
+            test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
             print(f"test loss: {test_loss}, test acc: {test_acc}")
             logger.info("l2 norm of Ui: %.4f", torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2)).item())
