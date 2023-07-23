@@ -88,8 +88,8 @@ def train():
     for epoch in range(args.epochs):
         start_epoch_time = time.time()
         U = []
+        data = []
         for i, (X, y, batch_idx) in enumerate(train_loader):
-            print(batch_idx)
             X, y = X.cuda(), y.cuda()
             Ui = (2 * max_norm * torch.rand(X.shape[0], 100) - max_norm).cuda()
             test_loss, test_acc = evaluate_batch(model, V, Ui, X, y)
@@ -118,8 +118,8 @@ def train():
             V = clamp_operator_norm(V)
             V = V.detach()
             Ui = Ui.detach()
-
-            U[batch_idx] = Ui
+            U[i] = Ui
+            data[i] = (X.to(torch.device("cpu")), y.to(torch.device("cpu")))
 
         if args.validation:
             test_loss, test_acc = evaluate_batch(model, V, Ui, X, y)
@@ -141,7 +141,7 @@ def train():
     # Evaluation final tensor
     logger.info("Training finished, starting evaluation.")
     print('Training finished, starting evaluation.')
-    test_loss, test_acc = evaluate_low_rank(model, V, U, train_loader)
+    test_loss, test_acc = evaluate_low_rank(model, V, U, data)
     logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
     print(f"test loss: {test_loss}, test acc: {test_acc}")
     logger.info('Finished evaluating final tensor.')
