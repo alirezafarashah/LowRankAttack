@@ -122,10 +122,10 @@ def train():
             if epoch == args.epochs - 1:
                 U.append(Ui)
                 data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
-            if i > 10:
-                test_loss, test_acc = evaluate_batch(model, V.detach().clone(), U[10], data[10][0],
-                                                     data[10][1])
-                print(f"4. test loss for first data batch: {test_loss}, test acc: {test_acc}")
+            # if i > 10:
+            #     test_loss, test_acc = evaluate_batch(model, V.detach().clone(), U[10], data[10][0],
+            #                                          data[10][1])
+            #     print(f"4. test loss for first data batch: {test_loss}, test acc: {test_acc}")
 
         if args.validation:
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
