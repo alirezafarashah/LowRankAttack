@@ -121,7 +121,6 @@ def train():
             if epoch == 0:
                 U.append(Ui)
                 data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
-            break
 
         if args.validation:
             test_loss, test_acc = evaluate_batch(model, V, Ui, X, y)
