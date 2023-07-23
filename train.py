@@ -91,7 +91,6 @@ def train():
         for i, (X, y, batch_idx) in enumerate(train_loader):
             X, y = X.cuda(), y.cuda()
             Ui = (2 * max_norm * torch.rand(X.shape[0], 100) - max_norm).cuda()
-            print("norm of UiV: ", torch.sum(torch.pow(torch.norm(torch.matmul(Ui, V), p=2, dim=1), 2)))
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
             # Ui optimization step
@@ -120,6 +119,8 @@ def train():
             Ui = Ui.detach()
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
+            print("4. l2 norm of Ui: ", torch.sum(torch.pow(torch.norm(Ui, p=2, dim=1), 2)))
+            print("5. norm of UiV: ", torch.sum(torch.pow(torch.norm(torch.matmul(Ui, V), p=2, dim=1), 2)))
             if epoch == args.epochs - 1:
                 U.append(Ui)
                 data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
