@@ -93,7 +93,7 @@ def train():
             X, y = X.cuda(), y.cuda()
             Ui = (2 * max_norm * torch.rand(X.shape[0], 100) - max_norm).cuda()
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
-            print(f"test loss before train Ui: {test_loss}, test acc: {test_acc}")
+            print(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
             # Ui optimization step
             V.requires_grad = False
             for j in range(inner_steps):
@@ -106,7 +106,7 @@ def train():
                 next_Ui = Ui + u_rate * torch.sign(grad)
                 Ui = next_Ui.detach()
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
-            print(f"test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
+            print(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
             # V optimization step
             V.requires_grad = True
             Ui.requires_grad = False
@@ -119,7 +119,7 @@ def train():
             V = V.detach()
             Ui = Ui.detach()
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
-            print(f"test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
+            print(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
             if epoch == 0:
                 U.append(Ui)
                 data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
