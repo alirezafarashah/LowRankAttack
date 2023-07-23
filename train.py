@@ -89,6 +89,7 @@ def train():
         start_epoch_time = time.time()
         U = []
         for i, (X, y, batch_idx) in enumerate(train_loader):
+            print(batch_idx)
             X, y = X.cuda(), y.cuda()
             Ui = (2 * max_norm * torch.rand(X.shape[0], 100) - max_norm).cuda()
             test_loss, test_acc = evaluate_batch(model, V, Ui, X, y)
@@ -117,7 +118,7 @@ def train():
             V = clamp_operator_norm(V)
             V = V.detach()
             Ui = Ui.detach()
-            print(batch_idx)
+
             U[batch_idx] = Ui
 
         if args.validation:
