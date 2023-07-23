@@ -109,7 +109,6 @@ def train():
             # V optimization step
             V.requires_grad = True
             Ui.requires_grad = False
-            print(Ui)
             output = model(X + torch.matmul(Ui, V).reshape(X.shape))
             loss = F.cross_entropy(output, y)
             grad = torch.autograd.grad(loss, V)[0]
@@ -118,8 +117,7 @@ def train():
             V = clamp_operator_norm(V)
             V = V.detach()
             Ui = Ui.detach()
-            U.append(Ui)
-            print(Ui)
+            U[batch_idx] = Ui
 
         if args.validation:
             test_loss, test_acc = evaluate_batch(model, V, Ui, X, y)
