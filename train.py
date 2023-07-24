@@ -122,9 +122,10 @@ def train():
             Ui = Ui.detach()
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
-            print("4. l2 norm of Ui: ", torch.pow(torch.linalg.vector_norm(Ui), 2))
-            print("5. norm of UiV: ", torch.pow(torch.linalg.vector_norm(torch.matmul(Ui, V)), 2))
-            print("5. norm of V: ", torch.pow(torch.linalg.vector_norm(V), 2))
+            print("4. l2 norm of Ui: ", torch.pow(torch.linalg.vector_norm(Ui.detach().clone()), 2))
+            print("5. norm of UiV: ",
+                  torch.pow(torch.linalg.vector_norm(torch.matmul(Ui.detach().clone(), V.detach().clone())), 2))
+            print("5. norm of V: ", torch.pow(torch.linalg.vector_norm(V.detach().clone()), 2))
             U.append(Ui)
             data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
 
