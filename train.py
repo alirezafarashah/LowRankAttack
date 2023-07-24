@@ -104,9 +104,8 @@ def train():
                 loss = F.cross_entropy(output, y) - lambda_1 * reg_term1
                 grad = torch.autograd.grad(loss, Ui)[0]
                 grad = grad.detach()
-                print("ugrad: ", torch.norm(grad, p=2))
                 next_Ui = Ui + u_rate * grad
-                # next_Ui = clamp(next_Ui, -epsilon, epsilon)
+                next_Ui = clamp(next_Ui, data_utils.lower_limit, data_utils.upper_limit)
                 Ui = next_Ui.detach()
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
@@ -117,8 +116,7 @@ def train():
             loss = F.cross_entropy(output, y)
             grad = torch.autograd.grad(loss, V)[0]
             grad = grad.detach()
-            print("vgrad: ", torch.norm(grad, p=2))
-            V = V + v_rate * torch.sign(grad)
+            V = V + v_rate * grad
             V = clamp_operator_norm(V)
             V = V.detach()
             Ui = Ui.detach()
