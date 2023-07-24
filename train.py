@@ -116,7 +116,7 @@ def train():
             loss = F.cross_entropy(output, y)
             grad = torch.autograd.grad(loss, V)[0]
             grad = grad.detach()
-            V = V + v_rate * torch.div(grad / torch.linalg.vector_norm(grad, dim=1).unsueeze(1))
+            V = V + v_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsueeze(1))
             V = clamp_operator_norm(V)
             V = V.detach()
             Ui = Ui.detach()
