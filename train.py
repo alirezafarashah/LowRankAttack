@@ -128,16 +128,16 @@ def train():
             U.append(Ui)
             data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
 
-        if args.validation:
-            test_loss, test_acc = evaluate_low_rank(model, V, U, data)
-            logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
-            print(f"test loss: {test_loss}, test acc: {test_acc}")
-            Ui_norm_2 = torch.pow(torch.linalg.vector_norm(Ui), 2)
-            V_norm_f = torch.pow(torch.linalg.matrix_norm(V), 2)
-            logger.info("l2 norm of Ui: %.4f", Ui_norm_2.item())
-            print("l2 norm of Ui: ", Ui_norm_2)
-            logger.info("fro norm of V: %.4f", V_norm_f.item())
-            print("fro norm of V: ", V_norm_f)
+            if args.validation and (i + 1) % 50 == 0:
+                test_loss, test_acc = evaluate_low_rank(model, V, U, data)
+                logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
+                print(f"test loss: {test_loss}, test acc: {test_acc}")
+                Ui_norm_2 = torch.pow(torch.linalg.vector_norm(Ui), 2)
+                V_norm_f = torch.pow(torch.linalg.matrix_norm(V), 2)
+                logger.info("l2 norm of Ui: %.4f", Ui_norm_2.item())
+                print("l2 norm of Ui: ", Ui_norm_2)
+                logger.info("fro norm of V: %.4f", V_norm_f.item())
+                print("fro norm of V: ", V_norm_f)
 
         epoch_time = time.time()
         print(epoch, epoch_time - start_epoch_time)
