@@ -104,7 +104,7 @@ def train():
                 loss = F.cross_entropy(output, y) - lambda_1 * reg_term1
                 grad = torch.autograd.grad(loss, Ui)[0]
                 grad = grad.detach()
-                next_Ui = Ui + u_rate * grad
+                next_Ui = Ui + u_rate * torch.sign(grad)
                 next_Ui = clamp(next_Ui.reshape(X.shape), data_utils.lower_limit, data_utils.upper_limit).reshape(
                     (X.shape[0], d))
                 Ui = next_Ui.detach()
@@ -117,7 +117,7 @@ def train():
             loss = F.cross_entropy(output, y)
             grad = torch.autograd.grad(loss, V)[0]
             grad = grad.detach()
-            V = V + v_rate * grad
+            V = V + v_rate * torch.sign(grad)
             V = clamp_operator_norm(V)
             V = V.detach()
             Ui = Ui.detach()
@@ -126,7 +126,7 @@ def train():
             print("4. l2 norm of Ui: ", torch.pow(torch.linalg.vector_norm(Ui.detach().clone()), 2))
             print("5. norm of UiV: ",
                   torch.pow(torch.linalg.vector_norm(torch.matmul(Ui.detach().clone(), V.detach().clone())), 2))
-            print("5. norm of V: ", torch.pow(torch.linalg.vector_norm(V.detach().clone()), 2))
+            print("6. norm of V: ", torch.pow(torch.linalg.vector_norm(V.detach().clone()), 2))
             U.append(Ui)
             data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
 
