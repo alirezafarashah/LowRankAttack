@@ -104,7 +104,7 @@ def train():
                 loss = F.cross_entropy(output, y) - lambda_1 * reg_term1
                 grad = torch.autograd.grad(loss, Ui)[0]
                 grad = grad.detach()
-                next_Ui = Ui + u_rate * torch.div(grad / torch.linalg.vector_norm(grad, dim=1).unsueeze(1))
+                next_Ui = Ui + u_rate * torch.div(grad / torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
                 # clamp to allowed interval
                 Ui = next_Ui.reshape((X.shape[0], d)).detach()
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
