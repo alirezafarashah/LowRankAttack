@@ -103,7 +103,6 @@ def train():
                 reg_term1 = torch.pow(torch.linalg.vector_norm(Ui), 2)
                 loss = F.cross_entropy(output, y) - lambda_1 * reg_term1
                 grad = torch.autograd.grad(loss, Ui)[0].detach()
-                print(torch.mean(torch.abs((torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))))))
                 Ui = Ui + u_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
                 # clamp to allowed interval
                 # Ui = normalize(Ui, V, data_utils.lower_limit, data_utils.upper_limit)
