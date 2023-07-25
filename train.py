@@ -79,7 +79,7 @@ def train():
     d = data_utils.img_size[0] * data_utils.img_size[1] * CHANNELS
     epsilon = torch.tensor(args.epsilon / 255.).cuda()
     max_norm = args.epsilon / 255.
-    V = torch.rand(d, d).cuda()
+    V = torch.rand(100, d).cuda()
     V = clamp_operator_norm(V)
     print("fro norm of V: ", torch.pow(torch.norm(V, p='fro'), 2))
     start_train_time = time.time()
@@ -92,7 +92,7 @@ def train():
         start_epoch_time = time.time()
         for i, (X, y, batch_idx) in enumerate(train_loader):
             X, y = X.cuda(), y.cuda()
-            Ui = (2 * max_norm * torch.rand(X.shape[0], d) - max_norm).cuda()
+            Ui = (2 * max_norm * torch.rand(X.shape[0], 100) - max_norm).cuda()
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
             # Ui optimization step
@@ -118,14 +118,14 @@ def train():
             grad = grad.detach()
             V = V + v_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
             V = clamp_operator_norm(V)
-            V = V.detach()
-            Ui = Ui.detach()
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
             print("4. l2 norm of Ui: ", torch.pow(torch.linalg.vector_norm(Ui.detach().clone()), 2))
             print("5. norm of UiV: ",
                   torch.pow(torch.linalg.vector_norm(torch.matmul(Ui.detach().clone(), V.detach().clone())), 2))
             print("6. norm of V: ", torch.pow(torch.linalg.vector_norm(V.detach().clone()), 2))
+            V = V.detach()
+            Ui = Ui.detach()
             U.append(Ui)
             data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
 
