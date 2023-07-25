@@ -106,10 +106,12 @@ def train():
                 grad = grad.detach()
                 next_Ui = Ui + u_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
                 # clamp to allowed interval
+                nextUi = normalize(nextUi, V, data_utils.lower_limit, data_utils.upper_limit)
                 Ui = next_Ui.detach()
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
             # V optimization step
+            V = V.detach()
             V.requires_grad = True
             Ui.requires_grad = False
             output = model(X + torch.matmul(Ui, V).reshape(X.shape))
