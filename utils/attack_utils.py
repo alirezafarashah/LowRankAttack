@@ -16,7 +16,6 @@ def clamp(X, lower_limit, upper_limit):
 def normalize(Ui, V, lower_limit, upper_limit):
     max_value = torch.max(torch.matmul(Ui, V))
     min_value = torch.min(torch.matmul(Ui, V))
-    print(max(max_value / torch.min(upper_limit), min_value / torch.max(lower_limit)))
     return torch.div(Ui, max(max_value / torch.min(upper_limit), min_value / torch.max(lower_limit)))
 
 
