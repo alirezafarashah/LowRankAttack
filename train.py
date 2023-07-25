@@ -102,12 +102,11 @@ def train():
                 output = model(X + torch.matmul(Ui, V).reshape(X.shape))
                 reg_term1 = torch.pow(torch.linalg.vector_norm(Ui), 2)
                 loss = F.cross_entropy(output, y) - lambda_1 * reg_term1
-                grad = torch.autograd.grad(loss, Ui)[0]
-                grad = grad.detach()
-                next_Ui = Ui + u_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
+                grad = torch.autograd.grad(loss, Ui)[0].detach()
+                Ui = Ui + u_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
                 # clamp to allowed interval
-                nextUi = normalize(nextUi, V, data_utils.lower_limit, data_utils.upper_limit)
-                Ui = next_Ui.detach()
+                Ui = normalize(Ui, V, data_utils.lower_limit, data_utils.upper_limit)
+                Ui = Ui.detach()
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
             # V optimization step
@@ -116,8 +115,7 @@ def train():
             Ui.requires_grad = False
             output = model(X + torch.matmul(Ui, V).reshape(X.shape))
             loss = F.cross_entropy(output, y)
-            grad = torch.autograd.grad(loss, V)[0]
-            grad = grad.detach()
+            grad = torch.autograd.grad(loss, V)[0].detach()
             V = V + v_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
             V = clamp_operator_norm(V)
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
@@ -128,7 +126,7 @@ def train():
             print("6. norm of V: ", torch.pow(torch.linalg.vector_norm(V.detach().clone()), 2))
             V = V.detach()
             Ui = Ui.detach()
-            U.append(Ui)
+            U.append(Ui.detach().clone())
             data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
 
             if args.validation and (i + 1) % 50 == 0:
