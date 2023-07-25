@@ -105,7 +105,7 @@ def train():
                 grad = torch.autograd.grad(loss, Ui)[0].detach()
                 Ui = Ui + u_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
                 # clamp to allowed interval
-                # Ui = normalize(Ui, V, data_utils.lower_limit, data_utils.upper_limit)
+                Ui = normalize(Ui, V, data_utils.lower_limit, data_utils.upper_limit)
                 Ui = Ui.detach()
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
