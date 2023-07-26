@@ -79,7 +79,7 @@ def train():
     epsilon = args.epsilon / 255.
     max_norm = epsilon
     V = torch.rand(100, d).cuda()
-    V = fro_projection(V)
+    V = fro_projection(V, args.d)
     print("fro norm of V: ", torch.pow(torch.norm(V, p='fro'), 2))
     start_train_time = time.time()
     logger.info('Epoch \t Seconds')
