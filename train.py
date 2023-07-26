@@ -129,6 +129,7 @@ def train():
             data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
 
             if args.validation and (i + 1) % 50 == 0:
+                print("test after 50 steps:")
                 test_loss, test_acc = evaluate_low_rank(model, V, U, data)
                 logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
                 print(f"test loss: {test_loss}, test acc: {test_acc}")
