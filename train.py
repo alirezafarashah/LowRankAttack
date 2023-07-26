@@ -73,9 +73,8 @@ def train():
     print(f"Evaluate model on clean dataset, test loss: {test_loss}, test acc: {test_acc}")
 
     inner_steps = args.inner_steps  # > 100
-    lambda_1 = args.lambda_1
-    u_rate = args.u_rate  # < 1/(2 * lambda)
-    v_rate = args.v_rate  # < 1/(2 * lambda)
+    u_rate = args.u_rate
+    v_rate = args.v_rate
     d = data_utils.img_size[0] * data_utils.img_size[1] * CHANNELS
     epsilon = args.epsilon / 255.
     max_norm = epsilon
@@ -116,13 +115,14 @@ def train():
             loss = F.cross_entropy(output, y)
             grad = torch.autograd.grad(loss, V)[0].detach()
             V = V + v_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
-            V = fro_projection(V)
+            V = fro_projection(V, args.d)
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
             print("4. l2 norm of Ui: ", torch.pow(torch.linalg.vector_norm(Ui.detach().clone()), 2))
-            print("5. norm of UiV: ",
+            print("5. l2 norm of UiV: ",
                   torch.pow(torch.linalg.vector_norm(torch.matmul(Ui.detach().clone(), V.detach().clone())), 2))
-            print("6. norm of V: ", torch.pow(torch.linalg.vector_norm(V.detach().clone()), 2))
+            print("6. l2 norm of V: ", torch.pow(torch.linalg.vector_norm(V.detach().clone()), 2))
+            print("7. fro norm of V: ", torch.pow(torch.linalg.matrix_norm(V), 2))
             V = V.detach()
             Ui = Ui.detach()
             U.append(Ui.detach().clone())
