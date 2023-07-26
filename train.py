@@ -80,7 +80,7 @@ def train():
     epsilon = args.epsilon / 255.
     max_norm = epsilon
     V = torch.rand(100, d).cuda()
-    V = clamp_operator_norm(V)
+    V = fro_projection(V)
     print("fro norm of V: ", torch.pow(torch.norm(V, p='fro'), 2))
     start_train_time = time.time()
     logger.info('Epoch \t Seconds')
@@ -104,7 +104,7 @@ def train():
                 grad = torch.autograd.grad(loss, Ui)[0].detach()
                 Ui = Ui + u_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
                 # Project onto l2 ball
-                Ui = project_l2(Ui, V, epsilon)
+                Ui = l2_projection(Ui, V, epsilon)
                 Ui = Ui.detach()
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
@@ -116,7 +116,7 @@ def train():
             loss = F.cross_entropy(output, y)
             grad = torch.autograd.grad(loss, V)[0].detach()
             V = V + v_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
-            V = clamp_operator_norm(V)
+            V = fro_projection(V)
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
             print("4. l2 norm of Ui: ", torch.pow(torch.linalg.vector_norm(Ui.detach().clone()), 2))

@@ -4,16 +4,16 @@ from tqdm import tqdm
 import numpy as np
 
 
-def clamp_operator_norm(V):
+def fro_projection(V, d=30):
     V_array = V.detach().cpu().numpy()
-    return torch.div(V, max(1, np.linalg.norm(V_array, 2)))
+    return torch.div(V, max(d, np.linalg.norm(V_array, ord='fro')))
 
 
 def clamp(X, lower_limit, upper_limit):
     return torch.max(torch.min(X, upper_limit), lower_limit)
 
 
-def project_l2(Ui, V, epsilon):
+def l2_projection(Ui, V, epsilon):
     UV_norm = torch.linalg.vector_norm(torch.matmul(Ui, V), dim=1)
     epsilon_tensor = torch.full((Ui.shape[0],), epsilon).cuda()
     ones = torch.ones_like(epsilon_tensor).cuda()
