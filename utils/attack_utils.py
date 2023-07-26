@@ -6,7 +6,7 @@ import numpy as np
 
 def fro_projection(V, d):
     V_array = V.detach().cpu().numpy()
-    return torch.div(V, max(d, np.linalg.norm(V_array, ord='fro')))
+    return torch.div(V, max(1, np.linalg.norm(V_array, ord='fro') / d))
 
 
 def clamp(X, lower_limit, upper_limit):
