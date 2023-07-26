@@ -15,8 +15,8 @@ def clamp(X, lower_limit, upper_limit):
 
 def project_l2(Ui, V, epsilon):
     UV_norm = torch.linalg.vector_norm(torch.matmul(Ui, V), dim=1)
-    epsilon_tensor = torch.full((Ui.shape[0],), epsilon)
-    ones = torch.ones_like(epsilon_tensor)
+    epsilon_tensor = torch.full((Ui.shape[0],), epsilon).cuda()
+    ones = torch.ones_like(epsilon_tensor).cuda()
     factor = torch.max(ones, UV_norm / epsilon_tensor).unsqueeze(1)
     return torch.div(Ui, factor)
 
