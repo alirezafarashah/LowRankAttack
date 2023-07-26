@@ -35,5 +35,5 @@ def get_args():
     parser.add_argument('--inner-steps', default=10, type=int, help='Number of steps to optimize Ui')
     parser.add_argument('--u-rate', default=1e-3, type=float, help='Learning rate for Ui optimization')
     parser.add_argument('--v-rate', default=1e-3, type=float, help='Learning rate for V optimization')
-    parser.add_argument('--d', default=30, type=int, help='Maximum frobenius norm of V')
+    parser.add_argument('--d', default=1, type=int, help='Maximum frobenius norm of V')
     return parser.parse_args()
