@@ -77,8 +77,8 @@ def train():
     u_rate = args.u_rate  # < 1/(2 * lambda)
     v_rate = args.v_rate  # < 1/(2 * lambda)
     d = data_utils.img_size[0] * data_utils.img_size[1] * CHANNELS
-    epsilon = torch.tensor(args.epsilon / 255.).cuda()
-    max_norm = args.epsilon / 255.
+    epsilon = args.epsilon / 255.
+    max_norm = epsilon
     V = torch.rand(100, d).cuda()
     V = clamp_operator_norm(V)
     print("fro norm of V: ", torch.pow(torch.norm(V, p='fro'), 2))
@@ -100,12 +100,11 @@ def train():
             for j in range(inner_steps):
                 Ui.requires_grad = True
                 output = model(X + torch.matmul(Ui, V).reshape(X.shape))
-                reg_term1 = torch.pow(torch.linalg.vector_norm(Ui), 2)
-                loss = F.cross_entropy(output, y) - lambda_1 * reg_term1
+                loss = F.cross_entropy(output, y)
                 grad = torch.autograd.grad(loss, Ui)[0].detach()
                 Ui = Ui + u_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
-                # clamp to allowed interval
-                # Ui = normalize(Ui, V, data_utils.lower_limit, data_utils.upper_limit)
+                # Project onto l2 ball
+                Ui = project_l2(Ui, V, epsilon)
                 Ui = Ui.detach()
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")

@@ -13,10 +13,12 @@ def clamp(X, lower_limit, upper_limit):
     return torch.max(torch.min(X, upper_limit), lower_limit)
 
 
-def normalize(Ui, V, lower_limit, upper_limit):
-    max_value = torch.max(torch.matmul(Ui, V))
-    min_value = torch.min(torch.matmul(Ui, V))
-    return torch.div(Ui, max(1, max_value / torch.min(upper_limit), min_value / torch.max(lower_limit)))
+def project_l2(Ui, V, epsilon):
+    UV_norm = torch.linalg.vector_norm(torch.matmul(Ui, V), dim=1)
+    epsilon_tensor = torch.full((Ui.shape[0],), epsilon)
+    ones = torch.ones_like(epsilon_tensor)
+    factor = torch.max(ones, UV_norm / epsilon_tensor).unsqueeze(1)
+    return torch.div(Ui, factor)
 
 
 def evaluate_low_rank(model, V, U, data):
