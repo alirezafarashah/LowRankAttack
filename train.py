@@ -37,7 +37,7 @@ def train():
         format='[%(asctime)s] - %(message)s',
         datefmt='%Y/%m/%d %H:%M:%S',
         level=logging.INFO,
-        filename='output.log')
+        filename=args.log_dir + 'output.log')
     logger.info(args)
 
     np.random.seed(args.seed)
