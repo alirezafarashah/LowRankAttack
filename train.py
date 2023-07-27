@@ -31,6 +31,8 @@ def train():
     else:
         raise ValueError('Unsupported dataset.')
 
+    if not os.path.exists(args.log_dir):
+        os.makedirs(args.log_dir)
     logging.basicConfig(
         format='[%(asctime)s] - %(message)s',
         datefmt='%Y/%m/%d %H:%M:%S',
@@ -94,6 +96,7 @@ def train():
             Ui = l2_projection(Ui, V, epsilon)
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
+            logger.info(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
             # Ui optimization step
             V.requires_grad = False
             for j in range(inner_steps):
@@ -107,6 +110,7 @@ def train():
                 Ui = Ui.detach()
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
+            logger.info(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
             # V optimization step
             V = V.detach()
             V.requires_grad = True
@@ -118,11 +122,18 @@ def train():
             V = fro_projection(V, args.d)
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
+            logger.info(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
             print("4. l2 norm of Ui: ", torch.pow(torch.linalg.vector_norm(Ui.detach().clone()), 2))
+            logger.info("4. l2 norm of Ui: %.4f", torch.pow(torch.linalg.vector_norm(Ui.detach().clone()), 2).item())
             print("5. l2 norm of UiV: ",
                   torch.pow(torch.linalg.vector_norm(torch.matmul(Ui.detach().clone(), V.detach().clone())), 2))
-            print("6. l2 norm of V: ", torch.pow(torch.linalg.vector_norm(V.detach().clone()), 2))
-            print("7. fro norm of V: ", torch.pow(torch.linalg.matrix_norm(V), 2))
+            logger.info("5. l2 norm of UiV: %.4f",
+                        torch.pow(torch.linalg.vector_norm(torch.matmul(Ui.detach().clone(), V.detach().clone())),
+                                  2).item())
+            print("6. fro norm of V: ", torch.pow(torch.linalg.matrix_norm(V), 2))
+            logger.info("6. fro norm of V: %.4f", torch.pow(torch.linalg.matrix_norm(V), 2).item())
+            print("7. nuclear norm of V: ", torch.linalg.matrix_norm(V, ord='nuc'))
+            logger.info("7. nuclear norm of V: %.4f", torch.linalg.matrix_norm(V, ord='nuc').item())
             V = V.detach()
             Ui = Ui.detach()
             U.append(Ui.detach().clone())
@@ -130,6 +141,7 @@ def train():
 
             if args.validation and (i + 1) % 50 == 0:
                 print("test after 50 steps:")
+                logger.info("test after 50 steps:")
                 test_loss, test_acc = evaluate_low_rank(model, V, U, data)
                 logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
                 print(f"test loss: {test_loss}, test acc: {test_acc}")

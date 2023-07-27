@@ -29,6 +29,8 @@ def get_args():
                         type=str, help='Pretrained model path')
     parser.add_argument('--save-path', default='/kaggle/working/',
                         type=str, help='Path to save the tensor V')
+    parser.add_argument('--log-dir', default='/kaggle/working/',
+                        type=str, help='Path to save the tensor V')
     parser.add_argument('--seed', default=0, type=int, help='Random seed')
 
     # Optimization args
