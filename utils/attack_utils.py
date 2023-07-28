@@ -8,6 +8,7 @@ from torch.utils.data import Dataset
 
 from tqdm import tqdm
 
+
 class AttackUtils(object):
 
     def __init__(self, lower_limit, upper_limit, std):
@@ -61,6 +62,7 @@ class AttackUtils(object):
                 pgd_loss += loss.item() * y.size(0)
                 pgd_acc += (output.max(1)[1] == y).sum().item()
                 n += y.size(0)
+            print("norm of delta:", torch.pow(torch.linalg.vector_norm(pgd_delta), 2))
         return pgd_loss / n, pgd_acc / n
 
 
