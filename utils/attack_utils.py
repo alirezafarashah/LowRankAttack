@@ -53,6 +53,8 @@ class AttackUtils(object):
         pgd_acc = 0
         n = 0
         model.eval()
+        mean_norm = 0
+        step = 0
         for i, (X, y, batch_idx) in enumerate(tqdm(test_loader)):
             X, y = X.cuda(), y.cuda()
             pgd_delta = self.attack_pgd_l2(model, X, y, epsilon, alpha, attack_iters, restarts)
@@ -62,7 +64,9 @@ class AttackUtils(object):
                 pgd_loss += loss.item() * y.size(0)
                 pgd_acc += (output.max(1)[1] == y).sum().item()
                 n += y.size(0)
-            print("norm of delta:", torch.pow(torch.linalg.vector_norm(pgd_delta), 2))
+            mean_norm += torch.pow(torch.linalg.vector_norm(pgd_delta), 2)
+            step += 1
+        print("mean of l2 norm of delta: ", mean_norm / step)
         return pgd_loss / n, pgd_acc / n
 
 
