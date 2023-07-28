@@ -79,8 +79,8 @@ def evaluate_model(model, test_loader):
 
 
 def l2_project(X, e):
-    X_norm = torch.linalg.vector_norm(X.reshape(1), dim=1)
-    epsilon_tensor = torch.full((X.reshape(1).shape[0],), e).cuda()
+    X_norm = torch.linalg.vector_norm(X, dim=1)
+    epsilon_tensor = torch.full((X.shape[0],), e).cuda()
     ones = torch.ones_like(epsilon_tensor).cuda()
     factor = torch.max(ones, X_norm / epsilon_tensor).unsqueeze(1)
-    return torch.div(X.reshape(1), factor).view(X.shape)
+    return torch.div(X, factor).view(X.shape)
