@@ -18,8 +18,6 @@ class AttackUtils(object):
         return torch.max(torch.min(X, upper_limit), lower_limit)
 
     def attack_pgd_l2(self, model, X, y, epsilon, alpha, attack_iters, restarts):
-        epsilon = torch.max(epsilon)
-        alpha = torch.max(alpha)
         max_loss = torch.zeros(y.shape[0]).cuda()
         max_delta = torch.zeros_like(X).cuda()
         for zz in range(restarts):
