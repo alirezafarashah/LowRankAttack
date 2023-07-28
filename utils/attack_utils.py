@@ -6,6 +6,7 @@ from torch.utils.data.sampler import SubsetRandomSampler
 import numpy as np
 from torch.utils.data import Dataset
 
+from tqdm import tqdm
 
 class AttackUtils(object):
 
@@ -51,7 +52,7 @@ class AttackUtils(object):
         pgd_acc = 0
         n = 0
         model.eval()
-        for i, (X, y, batch_idx) in enumerate(test_loader):
+        for i, (X, y, batch_idx) in enumerate(tqdm(test_loader)):
             X, y = X.cuda(), y.cuda()
             pgd_delta = self.attack_pgd_l2(model, X, y, epsilon, alpha, attack_iters, restarts)
             with torch.no_grad():
