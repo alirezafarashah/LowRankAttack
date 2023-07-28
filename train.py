@@ -18,11 +18,9 @@ CHANNELS = 3
 logger = logging.getLogger(__name__)
 
 
-def train():
-    global U, V
+def test():
     args = get_args()
     print(args)
-
     print('Defining data object')
     if args.dataset.upper() == 'CIFAR10':
         data_utils = CIFAR10Utils()
@@ -30,6 +28,8 @@ def train():
         data_utils = CIFAR100Utils()
     else:
         raise ValueError('Unsupported dataset.')
+
+    attack_utils = AttackUtils(data_utils.lower_limit, data_utils.upper_limit, data_utils.std)
 
     if not os.path.exists(args.log_dir):
         os.makedirs(args.log_dir)
@@ -74,98 +74,13 @@ def train():
     logger.info(f"Evaluate model on clean dataset, test loss: {test_loss}, test acc: {test_acc}")
     print(f"Evaluate model on clean dataset, test loss: {test_loss}, test acc: {test_acc}")
 
-    inner_steps = args.inner_steps  # > 100
-    u_rate = args.u_rate
-    v_rate = args.v_rate
-    d = data_utils.img_size[0] * data_utils.img_size[1] * CHANNELS
+    inner_steps = args.inner_steps
     epsilon = args.epsilon
-    V = torch.rand(100, d).cuda()
-    V = fro_projection(V, args.d)
-    print("fro norm of V: ", torch.pow(torch.norm(V, p='fro'), 2))
-    start_train_time = time.time()
-    logger.info('Epoch \t Seconds')
-    print('Epoch \t Seconds')
-
-    for epoch in range(args.epochs):
-        U = []
-        data = []
-        start_epoch_time = time.time()
-        for i, (X, y, batch_idx) in enumerate(train_loader):
-            X, y = X.cuda(), y.cuda()
-            Ui = torch.rand(X.shape[0], 100).cuda()
-            Ui = l2_projection(Ui, V, epsilon)
-            test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
-            print(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
-            logger.info(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
-            # Ui optimization step
-            V.requires_grad = False
-            for j in range(inner_steps):
-                Ui.requires_grad = True
-                output = model(X + torch.matmul(Ui, V).reshape(X.shape))
-                loss = F.cross_entropy(output, y)
-                grad = torch.autograd.grad(loss, Ui)[0].detach()
-                Ui = Ui + u_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
-                # Project onto l2 ball
-                Ui = l2_projection(Ui, V, epsilon)
-                Ui = Ui.detach()
-            test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
-            print(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
-            logger.info(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
-            # V optimization step
-            V = V.detach()
-            V.requires_grad = True
-            Ui.requires_grad = False
-            output = model(X + torch.matmul(Ui, V).reshape(X.shape))
-            loss = F.cross_entropy(output, y)
-            grad = torch.autograd.grad(loss, V)[0].detach()
-            V = V + v_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
-            V = fro_projection(V, args.d)
-            test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
-            print(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
-            logger.info(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
-            print("4. l2 norm of Ui: ", torch.pow(torch.linalg.vector_norm(Ui.detach().clone()), 2))
-            logger.info("4. l2 norm of Ui: %.4f", torch.pow(torch.linalg.vector_norm(Ui.detach().clone()), 2).item())
-            print("5. l2 norm of UiV: ",
-                  torch.pow(torch.linalg.vector_norm(torch.matmul(Ui.detach().clone(), V.detach().clone())), 2))
-            logger.info("5. l2 norm of UiV: %.4f",
-                        torch.pow(torch.linalg.vector_norm(torch.matmul(Ui.detach().clone(), V.detach().clone())),
-                                  2).item())
-            print("6. fro norm of V: ", torch.pow(torch.linalg.matrix_norm(V), 2))
-            logger.info("6. fro norm of V: %.4f", torch.pow(torch.linalg.matrix_norm(V), 2).item())
-            print("7. nuclear norm of V: ", torch.linalg.matrix_norm(V, ord='nuc'))
-            logger.info("7. nuclear norm of V: %.4f", torch.linalg.matrix_norm(V, ord='nuc').item())
-            V = V.detach()
-            Ui = Ui.detach()
-            U.append(Ui.detach().clone())
-            data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
-
-            if args.validation and (i + 1) % 50 == 0:
-                print("test after 50 steps:")
-                logger.info("test after 50 steps:")
-                test_loss, test_acc = evaluate_low_rank(model, V, U, data)
-                logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
-                print(f"test loss: {test_loss}, test acc: {test_acc}")
-                Ui_norm_2 = torch.pow(torch.linalg.vector_norm(Ui), 2)
-                V_norm_f = torch.pow(torch.linalg.matrix_norm(V), 2)
-                logger.info("l2 norm of Ui: %.4f", Ui_norm_2.item())
-                print("l2 norm of Ui: ", Ui_norm_2)
-                logger.info("fro norm of V: %.4f", V_norm_f.item())
-                print("fro norm of V: ", V_norm_f)
-
-        epoch_time = time.time()
-        print(epoch, epoch_time - start_epoch_time)
-
-    train_time = time.time()
-    if not os.path.exists(args.save_path):
-        os.makedirs(args.save_path)
-    torch.save(V, args.save_path + "V.pt")
-    logger.info('Total train time: %.4f minutes', (train_time - start_train_time) / 60)
-    print('Total train time: %.4f minutes', (train_time - start_train_time) / 60)
 
     # Evaluation final tensor
     logger.info("Training finished, starting evaluation.")
     print('Training finished, starting evaluation.')
-    test_loss, test_acc = evaluate_low_rank(model, V, U, data)
+    test_loss, test_acc = attack_utils.evaluate_pgd(train_loader, model, inner_steps, 1, epsilon)
     logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
     print(f"test loss: {test_loss}, test acc: {test_acc}")
     logger.info('Finished evaluating final tensor.')
@@ -173,4 +88,4 @@ def train():
 
 
 if __name__ == "__main__":
-    train()
+    test()
