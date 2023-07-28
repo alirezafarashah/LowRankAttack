@@ -22,7 +22,7 @@ class AttackUtils(object):
         max_delta = torch.zeros_like(X).cuda()
         for zz in range(restarts):
             delta = torch.zeros_like(X).cuda()
-            delta.uniform_(-epsilon, epsilon)
+            delta.uniform_(-epsilon / 255., epsilon / 255.)
             delta.data = self.clamp(delta, self.lower_limit - X, self.upper_limit - X)
             delta.requires_grad = True
             for kk in range(attack_iters):
