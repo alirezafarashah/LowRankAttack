@@ -147,7 +147,6 @@ def train():
             logger.info(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
             # V optimization step
             V.requires_grad = True
-            Ui.requires_grad = False
             Ui_copy = Ui.detach().clone()
             output = model(X + torch.matmul(Ui_copy, V).reshape(X.shape))
             loss = F.cross_entropy(output, y)
