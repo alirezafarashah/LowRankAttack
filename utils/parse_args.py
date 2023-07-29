@@ -34,8 +34,8 @@ def get_args():
     parser.add_argument('--seed', default=0, type=int, help='Random seed')
 
     # Optimization args
-    parser.add_argument('--inner-steps', default=10, type=int, help='Number of steps to optimize Ui')
-    parser.add_argument('--u-rate', default=1e-3, type=float, help='Learning rate for Ui optimization')
-    parser.add_argument('--v-rate', default=1e-3, type=float, help='Learning rate for V optimization')
-    parser.add_argument('--d', default=1, type=int, help='Maximum frobenius norm of V')
+    parser.add_argument('--inner-steps', default=100, type=int, help='Number of steps to optimize Ui')
+    parser.add_argument('--u-rate', default=1e-1, type=float, help='Learning rate for Ui optimization')
+    parser.add_argument('--v-rate', default=1e-2, type=float, help='Learning rate for V optimization')
+    parser.add_argument('--d', default=3, type=int, help='Maximum frobenius norm of V')
     return parser.parse_args()

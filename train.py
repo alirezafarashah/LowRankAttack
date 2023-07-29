@@ -97,6 +97,7 @@ def train():
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
             logger.info(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
+
             # Ui optimization step
             V.requires_grad = False
             V_copy = V.detach.clone()
@@ -114,6 +115,7 @@ def train():
             test_loss, test_acc = evaluate_batch(model, V_copy, Ui.detach().clone(), X, y)
             print(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
             logger.info(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
+
             # V optimization step
             V.requires_grad = True
             Ui_copy = Ui.detach().clone()
