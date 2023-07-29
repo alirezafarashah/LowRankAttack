@@ -100,7 +100,7 @@ def train():
 
             # Ui optimization step
             V.requires_grad = False
-            V_copy = V.detach.clone()
+            V_copy = V.detach().clone()
             for j in range(inner_steps):
                 Ui.requires_grad = True
                 output = model(X + torch.matmul(Ui, V_copy).reshape(X.shape))
