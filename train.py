@@ -18,37 +18,6 @@ CHANNELS = 3
 logger = logging.getLogger(__name__)
 
 
-def print_norms(model, V, Ui, X, y):
-    test_loss, test_acc = evaluate_batch(model, V, Ui, X, y)
-    print(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
-    logger.info(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
-    print("4. l2 norm of Ui: ", torch.pow(torch.linalg.vector_norm(Ui), 2))
-    logger.info("4. l2 norm of Ui: %.4f", torch.pow(torch.linalg.vector_norm(Ui), 2).item())
-    print("5. l2 norm of UiV: ",
-          torch.pow(torch.linalg.vector_norm(torch.matmul(Ui, V)), 2))
-    logger.info("5. l2 norm of UiV: %.4f",
-                torch.pow(torch.linalg.vector_norm(torch.matmul(Ui, V)),
-                          2).item())
-    print("6. fro norm of V: ", torch.pow(torch.linalg.matrix_norm(V), 2))
-    logger.info("6. fro norm of V: %.4f", torch.pow(torch.linalg.matrix_norm(V), 2).item())
-    print("7. nuclear norm of V: ", torch.linalg.matrix_norm(V, ord='nuc'))
-    logger.info("7. nuclear norm of V: %.4f", torch.linalg.matrix_norm(V, ord='nuc').item())
-
-
-def validation(model, V, U, Ui, data):
-    print("test after 50 steps:")
-    logger.info("test after 50 steps:")
-    test_loss, test_acc = evaluate_low_rank(model, V, U, data)
-    logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
-    print(f"test loss: {test_loss}, test acc: {test_acc}")
-    Ui_norm_2 = torch.pow(torch.linalg.vector_norm(Ui), 2)
-    V_norm_f = torch.pow(torch.linalg.matrix_norm(V), 2)
-    logger.info("l2 norm of Ui: %.4f", Ui_norm_2.item())
-    print("l2 norm of Ui: ", Ui_norm_2)
-    logger.info("fro norm of V: %.4f", V_norm_f.item())
-    print("fro norm of V: ", V_norm_f)
-
-
 def train():
     global U, V
     args = get_args()
@@ -174,6 +143,10 @@ def train():
     print('Total train time: %.4f minutes', (train_time - start_train_time) / 60)
 
     # Evaluation final tensor
+    eval_attack(model, V, U, data)
+
+
+def eval_attack(model, V, U, data):
     logger.info("Training finished, starting evaluation.")
     print('Training finished, starting evaluation.')
     test_loss, test_acc = evaluate_low_rank(model, V, U, data)
@@ -181,6 +154,37 @@ def train():
     print(f"test loss: {test_loss}, test acc: {test_acc}")
     logger.info('Finished evaluating final tensor.')
     print('Finished evaluating final tensor.')
+
+
+def print_norms(model, V, Ui, X, y):
+    test_loss, test_acc = evaluate_batch(model, V, Ui, X, y)
+    print(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
+    logger.info(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
+    print("4. l2 norm of Ui: ", torch.pow(torch.linalg.vector_norm(Ui), 2))
+    logger.info("4. l2 norm of Ui: %.4f", torch.pow(torch.linalg.vector_norm(Ui), 2).item())
+    print("5. l2 norm of UiV: ",
+          torch.pow(torch.linalg.vector_norm(torch.matmul(Ui, V)), 2))
+    logger.info("5. l2 norm of UiV: %.4f",
+                torch.pow(torch.linalg.vector_norm(torch.matmul(Ui, V)),
+                          2).item())
+    print("6. fro norm of V: ", torch.pow(torch.linalg.matrix_norm(V), 2))
+    logger.info("6. fro norm of V: %.4f", torch.pow(torch.linalg.matrix_norm(V), 2).item())
+    print("7. nuclear norm of V: ", torch.linalg.matrix_norm(V, ord='nuc'))
+    logger.info("7. nuclear norm of V: %.4f", torch.linalg.matrix_norm(V, ord='nuc').item())
+
+
+def validation(model, V, U, Ui, data):
+    print("test after 50 steps:")
+    logger.info("test after 50 steps:")
+    test_loss, test_acc = evaluate_low_rank(model, V, U, data)
+    logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
+    print(f"test loss: {test_loss}, test acc: {test_acc}")
+    Ui_norm_2 = torch.pow(torch.linalg.vector_norm(Ui), 2)
+    V_norm_f = torch.pow(torch.linalg.matrix_norm(V), 2)
+    logger.info("l2 norm of Ui: %.4f", Ui_norm_2.item())
+    print("l2 norm of Ui: ", Ui_norm_2)
+    logger.info("fro norm of V: %.4f", V_norm_f.item())
+    print("fro norm of V: ", V_norm_f)
 
 
 if __name__ == "__main__":
