@@ -18,6 +18,20 @@ CHANNELS = 3
 logger = logging.getLogger(__name__)
 
 
+def validation(model, V, U, Ui, data):
+    print("test after 50 steps:")
+    logger.info("test after 50 steps:")
+    test_loss, test_acc = evaluate_low_rank(model, V, U, data)
+    logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
+    print(f"test loss: {test_loss}, test acc: {test_acc}")
+    Ui_norm_2 = torch.pow(torch.linalg.vector_norm(Ui), 2)
+    V_norm_f = torch.pow(torch.linalg.matrix_norm(V), 2)
+    logger.info("l2 norm of Ui: %.4f", Ui_norm_2.item())
+    print("l2 norm of Ui: ", Ui_norm_2)
+    logger.info("fro norm of V: %.4f", V_norm_f.item())
+    print("fro norm of V: ", V_norm_f)
+
+
 def train():
     global U, V
     args = get_args()
@@ -93,64 +107,57 @@ def train():
         for i, (X, y, batch_idx) in enumerate(train_loader):
             X, y = X.cuda(), y.cuda()
             Ui = torch.rand(X.shape[0], 100).cuda()
-            Ui = l2_projection(Ui, V, epsilon)
+            Ui = l2_projection(Ui, V.detach().clone(), epsilon)
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
             logger.info(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
             # Ui optimization step
             V.requires_grad = False
+            V_copy = V.detach.clone()
             for j in range(inner_steps):
                 Ui.requires_grad = True
-                output = model(X + torch.matmul(Ui, V).reshape(X.shape))
+                output = model(X + torch.matmul(Ui, V_copy).reshape(X.shape))
                 loss = F.cross_entropy(output, y)
                 grad = torch.autograd.grad(loss, Ui)[0].detach()
                 Ui = Ui + u_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
                 # Project onto l2 ball
-                Ui = l2_projection(Ui, V, epsilon)
+                Ui = l2_projection(Ui, V_copy, epsilon)
                 Ui = Ui.detach()
-            test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
+            test_loss, test_acc = evaluate_batch(model, V_copy, Ui.detach().clone(), X, y)
             print(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
             logger.info(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
             # V optimization step
             V = V.detach()
             V.requires_grad = True
             Ui.requires_grad = False
-            output = model(X + torch.matmul(Ui, V).reshape(X.shape))
+            Ui_copy = Ui.detach().clone()
+            output = model(X + torch.matmul(Ui_copy, V).reshape(X.shape))
             loss = F.cross_entropy(output, y)
             grad = torch.autograd.grad(loss, V)[0].detach()
             V = V + v_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
             V = fro_projection(V, args.d)
-            test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
+            V_copy = V.detach().clone()
+            test_loss, test_acc = evaluate_batch(model, V_copy, Ui_copy, X, y)
             print(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
             logger.info(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
-            print("4. l2 norm of Ui: ", torch.pow(torch.linalg.vector_norm(Ui.detach().clone()), 2))
-            logger.info("4. l2 norm of Ui: %.4f", torch.pow(torch.linalg.vector_norm(Ui.detach().clone()), 2).item())
+            print("4. l2 norm of Ui: ", torch.pow(torch.linalg.vector_norm(Ui_copy), 2))
+            logger.info("4. l2 norm of Ui: %.4f", torch.pow(torch.linalg.vector_norm(Ui_copy), 2).item())
             print("5. l2 norm of UiV: ",
-                  torch.pow(torch.linalg.vector_norm(torch.matmul(Ui.detach().clone(), V.detach().clone())), 2))
+                  torch.pow(torch.linalg.vector_norm(torch.matmul(Ui_copy, V_copy)), 2))
             logger.info("5. l2 norm of UiV: %.4f",
-                        torch.pow(torch.linalg.vector_norm(torch.matmul(Ui.detach().clone(), V.detach().clone())),
+                        torch.pow(torch.linalg.vector_norm(torch.matmul(Ui_copy, V_copy)),
                                   2).item())
-            print("6. fro norm of V: ", torch.pow(torch.linalg.matrix_norm(V), 2))
-            logger.info("6. fro norm of V: %.4f", torch.pow(torch.linalg.matrix_norm(V), 2).item())
-            print("7. nuclear norm of V: ", torch.linalg.matrix_norm(V, ord='nuc'))
-            logger.info("7. nuclear norm of V: %.4f", torch.linalg.matrix_norm(V, ord='nuc').item())
+            print("6. fro norm of V: ", torch.pow(torch.linalg.matrix_norm(V_copy), 2))
+            logger.info("6. fro norm of V: %.4f", torch.pow(torch.linalg.matrix_norm(V_copy), 2).item())
+            print("7. nuclear norm of V: ", torch.linalg.matrix_norm(V_copy, ord='nuc'))
+            logger.info("7. nuclear norm of V: %.4f", torch.linalg.matrix_norm(V_copy, ord='nuc').item())
             V = V.detach()
             Ui = Ui.detach()
             U.append(Ui.detach().clone())
             data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
 
             if args.validation and (i + 1) % 50 == 0:
-                print("test after 50 steps:")
-                logger.info("test after 50 steps:")
-                test_loss, test_acc = evaluate_low_rank(model, V, U, data)
-                logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
-                print(f"test loss: {test_loss}, test acc: {test_acc}")
-                Ui_norm_2 = torch.pow(torch.linalg.vector_norm(Ui), 2)
-                V_norm_f = torch.pow(torch.linalg.matrix_norm(V), 2)
-                logger.info("l2 norm of Ui: %.4f", Ui_norm_2.item())
-                print("l2 norm of Ui: ", Ui_norm_2)
-                logger.info("fro norm of V: %.4f", V_norm_f.item())
-                print("fro norm of V: ", V_norm_f)
+                validation(model, V.detach().clone(), U, Ui.detach().clone(), data)
 
         epoch_time = time.time()
         print(epoch, epoch_time - start_epoch_time)
