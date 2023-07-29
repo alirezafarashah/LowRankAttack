@@ -18,6 +18,23 @@ CHANNELS = 3
 logger = logging.getLogger(__name__)
 
 
+def print_norms(model, V, Ui, X, y):
+    test_loss, test_acc = evaluate_batch(model, V, Ui, X, y)
+    print(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
+    logger.info(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
+    print("4. l2 norm of Ui: ", torch.pow(torch.linalg.vector_norm(Ui), 2))
+    logger.info("4. l2 norm of Ui: %.4f", torch.pow(torch.linalg.vector_norm(Ui), 2).item())
+    print("5. l2 norm of UiV: ",
+          torch.pow(torch.linalg.vector_norm(torch.matmul(Ui, V)), 2))
+    logger.info("5. l2 norm of UiV: %.4f",
+                torch.pow(torch.linalg.vector_norm(torch.matmul(Ui, V)),
+                          2).item())
+    print("6. fro norm of V: ", torch.pow(torch.linalg.matrix_norm(V), 2))
+    logger.info("6. fro norm of V: %.4f", torch.pow(torch.linalg.matrix_norm(V), 2).item())
+    print("7. nuclear norm of V: ", torch.linalg.matrix_norm(V, ord='nuc'))
+    logger.info("7. nuclear norm of V: %.4f", torch.linalg.matrix_norm(V, ord='nuc').item())
+
+
 def validation(model, V, U, Ui, data):
     print("test after 50 steps:")
     logger.info("test after 50 steps:")
@@ -119,43 +136,31 @@ def train():
                 output = model(X + torch.matmul(Ui, V_copy).reshape(X.shape))
                 loss = F.cross_entropy(output, y)
                 grad = torch.autograd.grad(loss, Ui)[0].detach()
+                Ui = Ui.detach()
                 Ui = Ui + u_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
                 # Project onto l2 ball
                 Ui = l2_projection(Ui, V_copy, epsilon)
                 Ui = Ui.detach()
+
             test_loss, test_acc = evaluate_batch(model, V_copy, Ui.detach().clone(), X, y)
             print(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
             logger.info(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
             # V optimization step
-            V = V.detach()
             V.requires_grad = True
             Ui.requires_grad = False
             Ui_copy = Ui.detach().clone()
             output = model(X + torch.matmul(Ui_copy, V).reshape(X.shape))
             loss = F.cross_entropy(output, y)
             grad = torch.autograd.grad(loss, V)[0].detach()
+            V = V.detach()
             V = V + v_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
             V = fro_projection(V, args.d)
-            V_copy = V.detach().clone()
-            test_loss, test_acc = evaluate_batch(model, V_copy, Ui_copy, X, y)
-            print(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
-            logger.info(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
-            print("4. l2 norm of Ui: ", torch.pow(torch.linalg.vector_norm(Ui_copy), 2))
-            logger.info("4. l2 norm of Ui: %.4f", torch.pow(torch.linalg.vector_norm(Ui_copy), 2).item())
-            print("5. l2 norm of UiV: ",
-                  torch.pow(torch.linalg.vector_norm(torch.matmul(Ui_copy, V_copy)), 2))
-            logger.info("5. l2 norm of UiV: %.4f",
-                        torch.pow(torch.linalg.vector_norm(torch.matmul(Ui_copy, V_copy)),
-                                  2).item())
-            print("6. fro norm of V: ", torch.pow(torch.linalg.matrix_norm(V_copy), 2))
-            logger.info("6. fro norm of V: %.4f", torch.pow(torch.linalg.matrix_norm(V_copy), 2).item())
-            print("7. nuclear norm of V: ", torch.linalg.matrix_norm(V_copy, ord='nuc'))
-            logger.info("7. nuclear norm of V: %.4f", torch.linalg.matrix_norm(V_copy, ord='nuc').item())
-            V = V.detach()
-            Ui = Ui.detach()
+
             U.append(Ui.detach().clone())
             data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
-
+            V = V.detach()
+            Ui = Ui.detach()
+            print_norms(model, V.detach().clone(), Ui.detach().clone(), X, y)
             if args.validation and (i + 1) % 50 == 0:
                 validation(model, V.detach().clone(), U, Ui.detach().clone(), data)
 
