@@ -75,7 +75,7 @@ def eval_transferability():
     test_acc = 0
     n = 0
     with torch.no_grad():
-        for Ui, batch_idx in U:
+        for Ui, batch_idx in tqdm(U):
             my_subset = Subset(eval_dataset, batch_idx)
             loader = DataLoader(my_subset, batch_size=128)
             X, y, idx = next(iter(loader))
