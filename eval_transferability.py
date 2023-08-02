@@ -42,7 +42,7 @@ def eval_transferability():
 
 
     eval_dataset = data_utils.get_eval_dataset(args.data_dir)
-    eval_loader = data_utils.get_indexed_loaders(args.data_dir, args.batch_size, valid_size=0)[0]
+    eval_loader = data_utils.get_indexed_loaders(args.data_dir, args.batch_size, valid_size=0)[1]
 
     # Define architecture
     args.num_classes = data_utils.max_label + 1  # Labels start from 0
