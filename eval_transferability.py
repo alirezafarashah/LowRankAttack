@@ -40,10 +40,6 @@ def eval_transferability():
         filename=args.log_dir + 'output.log')
     logger.info(args)
 
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    torch.cuda.manual_seed(args.seed)
-
     # Define architecture
     args.num_classes = data_utils.max_label + 1  # Labels start from 0
     if args.architecture.upper() == 'PREACTRESNET18':
