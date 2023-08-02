@@ -97,6 +97,9 @@ class CIFAR10Utils(object):
 
         return train_loader, test_loader, robust_test_loader, valid_loader, train_idx, valid_idx
 
+    def get_eval_dataset(self, dir_):
+        return IndexedCIFAR10Dataset(self.cifar10_mean, self.cifar10_std, dir_, train=True, download=True)
+
 
 class IndexedCIFAR10Dataset(Dataset):
     def __init__(self, mean, std, root='/data', download=False, train=True):
@@ -210,6 +213,9 @@ class CIFAR100Utils(object):
         )
 
         return train_loader, test_loader, robust_test_loader, valid_loader, train_idx, valid_idx
+
+    def get_eval_dataset(self, dir_):
+        return IndexedCIFAR100Dataset(self.dset_mean, self.dset_std, dir_, train=True, download=True)
 
 
 class IndexedCIFAR100Dataset(Dataset):

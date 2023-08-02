@@ -63,3 +63,4 @@ def evaluate_model(model, test_loader):
             test_acc += (output.max(1)[1] == y).sum().item()
             n += y.size(0)
     return test_loss / n, test_acc / n
+

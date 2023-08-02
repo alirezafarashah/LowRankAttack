@@ -9,10 +9,11 @@ import torch.nn.functional as F
 
 from architectures.preact_resnet import PreActResNet18
 from architectures.wide_resnet import Wide_ResNet
+from architectures.resnet import ResNet50, ResNet18
 
 from utils.data_utils import CIFAR10Utils, CIFAR100Utils
 from utils.attack_utils import *
-from utils.parse_args import get_args
+from utils.parse_args import get_train_args
 
 CHANNELS = 3
 logger = logging.getLogger(__name__)
@@ -20,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 def train():
     global U, V
-    args = get_args()
+    args = get_train_args()
     print(args)
 
     print('Defining data object')
@@ -54,11 +55,11 @@ def train():
     args.num_classes = data_utils.max_label + 1  # Labels start from 0
     if args.architecture.upper() == 'PREACTRESNET18':
         model = PreActResNet18(num_classes=args.num_classes).cuda()
-    elif args.architecture.upper() in 'WIDERESNET':
-        model = Wide_ResNet(args.wide_resnet_depth,
-                            args.wide_resnet_width,
-                            args.wide_resnet_dropout_rate,
-                            num_classes=args.num_classes).cuda()
+    elif args.architecture.upper() in 'RESNET18':
+        model = ResNet18(num_classes=args.num_classes).cuda()
+    elif args.architecture.upper() in 'RESNET50':
+        model = ResNet50(num_classes=args.num_classes).cuda()
+
     else:
         raise ValueError('Unknown architecture.')
 

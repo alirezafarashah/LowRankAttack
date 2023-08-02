@@ -1,19 +1,16 @@
 import argparse
 import copy
 import logging
+from argparse import ArgumentParser
 
 
-def get_args():
-    parser = argparse.ArgumentParser()
+def get_train_args():
+    parser: ArgumentParser = argparse.ArgumentParser()
 
     # Architecture settings
     parser.add_argument('--dataset', default='CIFAR10', type=str, help='One of: CIFAR10, CIFAR100 or SVHN')
     parser.add_argument('--architecture', default='PreActResNet18', type=str,
-                        help='One of: wideresnet, preactresnet18. Default: preactresnet18.')
-    parser.add_argument('--wide_resnet_depth', default=28, type=int, help='WideResNet depth')
-    parser.add_argument('--wide_resnet_width', default=10, type=int, help='WideResNet width')
-    parser.add_argument('--wide_resnet_dropout_rate', default=0.3, type=float, help='WideResNet dropout rate')
-
+                        help='One of: resnet18, resnet50, preactresnet18. Default: preactresnet18.')
     # Training schedule settings
     parser.add_argument('--batch-size', default=128, type=int)
     parser.add_argument('--data-dir', default='/path/to/datasets/', type=str)
@@ -38,4 +35,29 @@ def get_args():
     parser.add_argument('--u-rate', default=1e-1, type=float, help='Learning rate for Ui optimization')
     parser.add_argument('--v-rate', default=1e-2, type=float, help='Learning rate for V optimization')
     parser.add_argument('--d', default=3, type=int, help='Maximum frobenius norm of V')
+    return parser.parse_args()
+
+
+def get_eval_args():
+    parser: ArgumentParser = argparse.ArgumentParser()
+
+    # Architecture settings
+    parser.add_argument('--dataset', default='CIFAR10', type=str, help='One of: CIFAR10, CIFAR100 or SVHN')
+    parser.add_argument('--architecture', default='PreActResNet18', type=str,
+                        help='One of: resnet18, resnet50, preactresnet18. Default: preactresnet18.')
+
+    parser.add_argument('--batch-size', default=128, type=int)
+    parser.add_argument('--data-dir', default='/path/to/datasets/', type=str)
+
+    # Config paths
+    parser.add_argument('--model-path', default='/kaggle/working/',
+                        type=str, help='Pretrained model path')
+    parser.add_argument('--U-path', default='/kaggle/working/U.pt',
+                        type=str, help='Path of trained U tensor')
+    parser.add_argument('--V-path', default='/kaggle/working/V.pt',
+                        type=str, help='Path of trained V tensor')
+
+    parser.add_argument('--log-dir', default='/kaggle/working/',
+                        type=str, help='Path to save the tensor V')
+
     return parser.parse_args()
