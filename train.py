@@ -85,7 +85,7 @@ def train():
     start_train_time = time.time()
     logger.info('Epoch \t Seconds')
     print('Epoch \t Seconds')
-
+    final_U = []
     for epoch in range(args.epochs):
         U = []
         data = []
@@ -133,6 +133,8 @@ def train():
             print_norms(model, V.detach().clone(), Ui.detach().clone(), X, y)
             if args.validation and (i + 1) % 50 == 0:
                 validation(model, V.detach().clone(), U, Ui.detach().clone(), data)
+            if epoch == args.epochs - 1:
+                final_U.append((Ui.detach().clone(), batch_idx))
 
         epoch_time = time.time()
         print(epoch, epoch_time - start_epoch_time)
@@ -141,6 +143,7 @@ def train():
     if not os.path.exists(args.save_path):
         os.makedirs(args.save_path)
     torch.save(V, args.save_path + "V.pt")
+    torch.save(final_U, args.save_path + "U.pt")
     logger.info('Total train time: %.4f minutes', (train_time - start_train_time) / 60)
     print('Total train time: %.4f minutes', (train_time - start_train_time) / 60)
 
