@@ -18,7 +18,6 @@ from utils.data_utils import CIFAR10Utils, CIFAR100Utils
 from utils.attack_utils import *
 from utils.parse_args import get_eval_args
 
-CHANNELS = 3
 logger = logging.getLogger(__name__)
 
 
