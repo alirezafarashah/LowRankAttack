@@ -87,8 +87,8 @@ def eval_transferability():
             n += y.size(0)
         test_loss = test_loss / n
         test_acc = test_acc / n
-        print(f"test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
-        logger.info(f"test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
+        print(f"test loss on U and V: {test_loss}, test acc: {test_acc}")
+        logger.info(f"test loss on U and V: {test_loss}, test acc: {test_acc}")
 
 
 if __name__ == "__main__":
