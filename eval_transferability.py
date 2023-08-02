@@ -40,6 +40,10 @@ def eval_transferability():
         filename=args.log_dir + 'output.log')
     logger.info(args)
 
+
+    eval_dataset = data_utils.get_eval_dataset(args.data_dir)
+    eval_loader = data_utils.get_indexed_loaders(args.data_dir, args.batch_size, valid_size=0)[0]
+
     # Define architecture
     args.num_classes = data_utils.max_label + 1  # Labels start from 0
     if args.architecture.upper() == 'PREACTRESNET18':
@@ -52,8 +56,6 @@ def eval_transferability():
     else:
         raise ValueError('Unknown architecture.')
 
-    eval_dataset = data_utils.get_eval_dataset(args.data_dir)
-    eval_loader = data_utils.get_indexed_loaders(args.data_dir, args.batch_size, valid_size=0)[0]
     model_path = args.model_path
     if not os.path.exists(model_path):
         raise ValueError('Pretrained model does not exist.')
