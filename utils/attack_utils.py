@@ -55,9 +55,11 @@ class AttackUtils(object):
         model.eval()
         mean_norm = 0
         step = 0
+        perturbations = []
         for i, (X, y, batch_idx) in enumerate(tqdm(test_loader)):
             X, y = X.cuda(), y.cuda()
             pgd_delta = self.attack_pgd_l2(model, X, y, epsilon, alpha, attack_iters, restarts)
+            perturbations.append((pgd_delta.detach().clone(), batch_idx))
             with torch.no_grad():
                 output = model(X + pgd_delta)
                 loss = F.cross_entropy(output, y)
@@ -67,7 +69,7 @@ class AttackUtils(object):
             mean_norm += torch.pow(torch.linalg.vector_norm(pgd_delta), 2)
             step += 1
         print("mean of l2 norm of delta: ", mean_norm / step)
-        return pgd_loss / n, pgd_acc / n
+        return pgd_loss / n, pgd_acc / n, perturbations
 
 
 def evaluate_model(model, test_loader):

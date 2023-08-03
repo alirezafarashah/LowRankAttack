@@ -80,7 +80,8 @@ def test():
     # Evaluation final tensor
     logger.info("Training finished, starting evaluation.")
     print('Training finished, starting evaluation.')
-    test_loss, test_acc = attack_utils.evaluate_pgd(train_loader, model, inner_steps, 1, epsilon)
+    test_loss, test_acc, perturbations = attack_utils.evaluate_pgd(train_loader, model, inner_steps, 1, epsilon)
+    torch.save(perturbations, args.save_path + "perturbations.pt")
     logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
     print(f"test loss: {test_loss}, test acc: {test_acc}")
     logger.info('Finished evaluating final tensor.')
