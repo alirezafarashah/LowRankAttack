@@ -19,6 +19,44 @@ class AttackUtils(object):
     def clamp(self, X, lower_limit, upper_limit):
         return torch.max(torch.min(X, upper_limit), lower_limit)
 
+    def normalize(self, X, mu, std):
+        return (X - mu) / std
+
+    def attack_pgd(self, model, X, y, epsilon, alpha, attack_iters, restarts, ):
+        max_loss = torch.zeros(y.shape[0]).cuda()
+        max_delta = torch.zeros_like(X).cuda()
+        for _ in range(restarts):
+            delta = torch.zeros_like(X).cuda()
+            delta.normal_()
+            d_flat = delta.view(delta.size(0), -1)
+            n = d_flat.norm(p=2, dim=1).view(delta.size(0), 1, 1, 1)
+            r = torch.zeros_like(n).uniform_(0, 1)
+            delta *= r / n * epsilon
+            delta = self.clamp(delta, self.lower_limit - X, self.upper_limit - X)
+            delta.requires_grad = True
+            for _ in range(attack_iters):
+                output = model(X + delta)
+                index = slice(None, None, None)
+                if not isinstance(index, slice) and len(index) == 0:
+                    break
+                loss = F.cross_entropy(output, y)
+                loss.backward()
+                grad = delta.grad.detach()
+                d = delta[index, :, :, :]
+                g = grad[index, :, :, :]
+                x = X[index, :, :, :]
+                g_norm = torch.norm(g.view(g.shape[0], -1), dim=1).view(-1, 1, 1, 1)
+                scaled_g = g / (g_norm + 1e-10)
+                d = (d + scaled_g * alpha).view(d.size(0), -1).renorm(p=2, dim=0, maxnorm=epsilon).view_as(d)
+                d = self.clamp(d, self.lower_limit - x, self.upper_limit - x)
+                delta.data[index, :, :, :] = d
+                delta.grad.zero_()
+
+            all_loss = F.cross_entropy(model(X + delta), y, reduction='none')
+            max_delta[all_loss >= max_loss] = delta.detach()[all_loss >= max_loss]
+            max_loss = torch.max(max_loss, all_loss)
+        return max_delta
+
     def attack_pgd_l2(self, model, X, y, epsilon, alpha, attack_iters, restarts):
         max_loss = torch.zeros(y.shape[0]).cuda()
         max_delta = torch.zeros_like(X).cuda()
@@ -58,7 +96,7 @@ class AttackUtils(object):
         perturbations = []
         for i, (X, y, batch_idx) in enumerate(tqdm(test_loader)):
             X, y = X.cuda(), y.cuda()
-            pgd_delta = self.attack_pgd_l2(model, X, y, epsilon, alpha, attack_iters, restarts)
+            pgd_delta = self.attack_pgd(model, X, y, epsilon, alpha, attack_iters, restarts)
             perturbations.append((pgd_delta.detach().clone(), batch_idx))
             with torch.no_grad():
                 output = model(X + pgd_delta)
