@@ -22,16 +22,20 @@ class AttackUtils(object):
     def normalize(self, X, mu, std):
         return (X - mu) / std
 
-    def attack_pgd(self, model, X, y, epsilon, alpha, attack_iters, restarts, ):
+    def attack_pgd(self, model, X, y, epsilon, alpha, attack_iters, restarts, random_init):
         max_loss = torch.zeros(y.shape[0]).cuda()
         max_delta = torch.zeros_like(X).cuda()
         for _ in range(restarts):
             delta = torch.zeros_like(X).cuda()
-            delta.normal_()
-            d_flat = delta.view(delta.size(0), -1)
-            n = d_flat.norm(p=2, dim=1).view(delta.size(0), 1, 1, 1)
-            r = torch.zeros_like(n).uniform_(0, 1)
-            delta *= r / n * epsilon
+            if random_init == 'normal':
+                delta.normal_()
+                d_flat = delta.view(delta.size(0), -1)
+                n = d_flat.norm(p=2, dim=1).view(delta.size(0), 1, 1, 1)
+                r = torch.zeros_like(n).uniform_(0, 1)
+                delta *= r / n * epsilon
+            elif random_init == 'uniform':
+                delta.uniform_(-epsilon, epsilon)
+                delta.data = l2_project(delta, epsilon)
             delta = self.clamp(delta, self.lower_limit - X, self.upper_limit - X)
             delta.requires_grad = True
             for _ in range(attack_iters):
@@ -63,6 +67,7 @@ class AttackUtils(object):
         for zz in range(restarts):
             delta = torch.zeros_like(X).cuda()
             delta.uniform_(-epsilon / 255., epsilon / 255.)
+            delta.data = l2_project(delta, epsilon)
             delta.data = self.clamp(delta, self.lower_limit - X, self.upper_limit - X)
             delta.requires_grad = True
             for kk in range(attack_iters):
@@ -85,7 +90,8 @@ class AttackUtils(object):
             max_loss = torch.max(max_loss, all_loss)
         return max_delta
 
-    def evaluate_pgd(self, test_loader, model, attack_iters, restarts=1, epsilon=128 / 255., pgd_alpha=15 / 255.):
+    def evaluate_pgd(self, test_loader, model, attack_iters, restarts=1, epsilon=128 / 255., pgd_alpha=15 / 255.,
+                     random_init='normal'):
         alpha = pgd_alpha
         pgd_loss = 0
         pgd_acc = 0
@@ -96,7 +102,7 @@ class AttackUtils(object):
         perturbations = []
         for i, (X, y, batch_idx) in enumerate(tqdm(test_loader)):
             X, y = X.cuda(), y.cuda()
-            pgd_delta = self.attack_pgd(model, X, y, epsilon, alpha, attack_iters, restarts)
+            pgd_delta = self.attack_pgd(model, X, y, epsilon, alpha, attack_iters, restarts, random_init)
             perturbations.append((pgd_delta.detach().clone(), batch_idx))
             with torch.no_grad():
                 output = model(X + pgd_delta)

@@ -78,10 +78,16 @@ def test():
     # Evaluation final tensor
     logger.info("Training finished, starting evaluation.")
     print('Training finished, starting evaluation.')
-    pgd_alpha = args.pgd_alpha / 255.
     epsilon = args.epsilon / 255.
+    pgd_alpha = args.pgd_alpha / 255.
+    random_init = 'normal'
+    if args.method.upper() == 'FGSM':
+        attack_iters = 1
+        pgd_alpha = 1.25 * args.pgd_alpha / 255.
+        random_init = 'uniform'
+
     test_loss, test_acc, perturbations = attack_utils.evaluate_pgd(train_loader, model, attack_iters, 1, epsilon,
-                                                                   pgd_alpha)
+                                                                   pgd_alpha, random_init)
     torch.save(perturbations, args.save_path + "perturbations.pt")
     logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
     print(f"test loss: {test_loss}, test acc: {test_acc}")
