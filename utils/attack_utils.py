@@ -85,8 +85,8 @@ class AttackUtils(object):
             max_loss = torch.max(max_loss, all_loss)
         return max_delta
 
-    def evaluate_pgd(self, test_loader, model, attack_iters, restarts=1, epsilon=2):
-        alpha = epsilon / attack_iters * 2
+    def evaluate_pgd(self, test_loader, model, attack_iters, restarts=1, epsilon=128 / 255., pgd_alpha=15 / 255.):
+        alpha = pgd_alpha
         pgd_loss = 0
         pgd_acc = 0
         n = 0

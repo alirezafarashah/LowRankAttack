@@ -14,11 +14,10 @@ def get_args():
     # Training schedule settings
     parser.add_argument('--batch-size', default=128, type=int)
     parser.add_argument('--data-dir', default='/path/to/datasets/', type=str)
-    parser.add_argument('--epochs', default=10, type=int)
 
     # Adversarial training and evaluation settings
-    parser.add_argument('--epsilon', default=8, type=int)
-
+    parser.add_argument('--epsilon', default=128, type=int)
+    parser.add_argument('--pgd-alpha', default=15, type=int)
     # Config paths
     parser.add_argument('--model-path', default='/kaggle/working/',
                         type=str, help='Pretrained model path')
