@@ -28,7 +28,7 @@ def get_args():
     parser.add_argument('--seed', default=0, type=int, help='Random seed')
 
     # Optimization args
-    parser.add_argument('--inner-steps', default=10, type=int, help='Number of steps to optimize Ui')
+    parser.add_argument('--attack-iters', default=20, type=int, help='Number of steps to optimize Ui')
     return parser.parse_args()
 
 

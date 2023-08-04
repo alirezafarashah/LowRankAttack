@@ -74,13 +74,13 @@ def test():
     logger.info(f"Evaluate model on clean dataset, test loss: {test_loss}, test acc: {test_acc}")
     print(f"Evaluate model on clean dataset, test loss: {test_loss}, test acc: {test_acc}")
 
-    inner_steps = args.inner_steps
+    attack_iters = args.attack_iters
     # Evaluation final tensor
     logger.info("Training finished, starting evaluation.")
     print('Training finished, starting evaluation.')
     pgd_alpha = args.pgd_alpha / 255.
     epsilon = args.epsilon / 255.
-    test_loss, test_acc, perturbations = attack_utils.evaluate_pgd(train_loader, model, inner_steps, 1, epsilon,
+    test_loss, test_acc, perturbations = attack_utils.evaluate_pgd(train_loader, model, attack_iters, 1, epsilon,
                                                                    pgd_alpha)
     torch.save(perturbations, args.save_path + "perturbations.pt")
     logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
