@@ -8,6 +8,7 @@ import torch
 import torch.nn.functional as F
 
 from architectures.preact_resnet import PreActResNet18
+from architectures.vgg16 import VGG16
 from architectures.wide_resnet import Wide_ResNet
 from architectures.resnet import ResNet50, ResNet18
 
@@ -59,12 +60,13 @@ def train():
         model = ResNet18(num_classes=args.num_classes).cuda()
     elif args.architecture.upper() in 'RESNET50':
         model = ResNet50(num_classes=args.num_classes).cuda()
-
+    elif args.architecture.upper() in 'VGG16':
+        model = VGG16()
     else:
         raise ValueError('Unknown architecture.')
 
     model_path = args.model_path
-    if not os.path.exists(model_path):
+    if not os.path.exists(model_path) and args.architecture.upper() not in 'VGG16':
         raise ValueError('Pretrained model does not exist.')
 
     model.load_state_dict(torch.load(model_path))
