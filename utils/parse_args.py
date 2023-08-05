@@ -7,6 +7,9 @@ def get_args():
     parser = argparse.ArgumentParser()
 
     # Architecture settings
+    # Method
+    parser.add_argument('--method', default='PGD', type=str, help='One of: PGD or FGSM')
+
     parser.add_argument('--dataset', default='CIFAR10', type=str, help='One of: CIFAR10, CIFAR100 or SVHN')
     parser.add_argument('--architecture', default='PreActResNet18', type=str,
                         help='One of: resnet18, resnet18. Default: preactresnet18.')
@@ -35,8 +38,6 @@ def get_args():
 def get_eval_args():
     parser = argparse.ArgumentParser()
 
-    # Method
-    parser.add_argument('--method', default='PGD', type=str, help='One of: PGD or FGSM')
     # Architecture settings
     parser.add_argument('--dataset', default='CIFAR10', type=str, help='One of: CIFAR10, CIFAR100 or SVHN')
     parser.add_argument('--architecture', default='PreActResNet18', type=str,
