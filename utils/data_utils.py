@@ -28,7 +28,8 @@ class CIFAR10Utils(object):
         if batch_size_test is None:
             batch_size_test = batch_size
 
-        train_dataset = IndexedCIFAR10Dataset(self.cifar10_mean, self.cifar10_std, dir_, train=True, download=True)
+        train_dataset = IndexedCIFAR10Dataset(self.cifar10_mean, self.cifar10_std, dir_, train=True, download=True,
+                                              random_transform=False)
 
         # storing this data to check on main
         self.img_size = (train_dataset.dataset.data.shape[1], train_dataset.dataset.data.shape[2])
@@ -98,17 +99,24 @@ class CIFAR10Utils(object):
         return train_loader, test_loader, robust_test_loader, valid_loader, train_idx, valid_idx
 
     def get_eval_dataset(self, dir_):
-        return IndexedCIFAR10Dataset(self.cifar10_mean, self.cifar10_std, dir_, train=True, download=True)
+        return IndexedCIFAR10Dataset(self.cifar10_mean, self.cifar10_std, dir_, train=True, download=True,
+                                     random_transform=False)
 
 
 class IndexedCIFAR10Dataset(Dataset):
-    def __init__(self, mean, std, root='/data', download=False, train=True):
-        train_transform = transforms.Compose([
-            transforms.RandomCrop(32, padding=4),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize(mean, std),
-        ])
+    def __init__(self, mean, std, root='/data', download=False, train=True, random_transform=False):
+        if random_transform:
+            train_transform = transforms.Compose([
+                transforms.RandomCrop(32, padding=4),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                transforms.Normalize(mean, std),
+            ])
+        else:
+            train_transform = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize(mean, std),
+            ])
         self.dataset = datasets.CIFAR10(root=root,
                                         download=download,
                                         train=train,
@@ -145,7 +153,8 @@ class CIFAR100Utils(object):
         if batch_size_test is None:
             batch_size_test = batch_size
 
-        train_dataset = IndexedCIFAR100Dataset(self.dset_mean, self.dset_std, dir_, train=True, download=True)
+        train_dataset = IndexedCIFAR100Dataset(self.dset_mean, self.dset_std, dir_, train=True, download=True,
+                                               random_transform=False)
 
         # storing this data to check on main
         self.img_size = (train_dataset.dataset.data.shape[1], train_dataset.dataset.data.shape[2])
@@ -215,17 +224,24 @@ class CIFAR100Utils(object):
         return train_loader, test_loader, robust_test_loader, valid_loader, train_idx, valid_idx
 
     def get_eval_dataset(self, dir_):
-        return IndexedCIFAR100Dataset(self.dset_mean, self.dset_std, dir_, train=True, download=True)
+        return IndexedCIFAR100Dataset(self.dset_mean, self.dset_std, dir_, train=True, download=True,
+                                      random_transform=False)
 
 
 class IndexedCIFAR100Dataset(Dataset):
-    def __init__(self, mean, std, root='/data', download=False, train=True):
-        train_transform = transforms.Compose([
-            transforms.RandomCrop(32, padding=4),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize(mean, std),
-        ])
+    def __init__(self, mean, std, root='/data', download=False, train=True, random_transform=False):
+        if random_transform:
+            train_transform = transforms.Compose([
+                transforms.RandomCrop(32, padding=4),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                transforms.Normalize(mean, std),
+            ])
+        else:
+            train_transform = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize(mean, std),
+            ])
         self.dataset = datasets.CIFAR100(root=root,
                                          download=download,
                                          train=train,
