@@ -81,7 +81,7 @@ def train():
     u_rate = args.u_rate
     v_rate = args.v_rate
     d = data_utils.img_size[0] * data_utils.img_size[1] * CHANNELS
-    epsilon = args.epsilonc
+    epsilon = args.epsilon
     V = torch.zeros(100, d).cuda()
     V.uniform_(-epsilon / 255., epsilon / 255.)
     V = fro_projection(V, args.d)
