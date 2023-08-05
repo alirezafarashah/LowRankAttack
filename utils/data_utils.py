@@ -104,7 +104,7 @@ class CIFAR10Utils(object):
 
 
 class IndexedCIFAR10Dataset(Dataset):
-    def __init__(self, mean, std, root='/data', download=False, train=True, random_transform=True):
+    def __init__(self, mean, std, root='/data', download=False, train=True, random_transform=False):
         if random_transform:
             train_transform = transforms.Compose([
                 transforms.RandomCrop(32, padding=4),
@@ -229,7 +229,7 @@ class CIFAR100Utils(object):
 
 
 class IndexedCIFAR100Dataset(Dataset):
-    def __init__(self, mean, std, root='/data', download=False, train=True, random_transform=True):
+    def __init__(self, mean, std, root='/data', download=False, train=True, random_transform=False):
         if random_transform:
             train_transform = transforms.Compose([
                 transforms.RandomCrop(32, padding=4),
