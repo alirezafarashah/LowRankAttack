@@ -17,7 +17,7 @@ def get_train_args():
     parser.add_argument('--epochs', default=10, type=int)
 
     # Adversarial training and evaluation settings
-    parser.add_argument('--epsilon', default=8, type=int)
+    parser.add_argument('--epsilon', default=8, type=float)
     parser.add_argument('--validation', action='store_true',
                         help='Validate attack')
 
