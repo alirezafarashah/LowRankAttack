@@ -82,7 +82,7 @@ def train():
     v_rate = args.v_rate
     d = data_utils.img_size[0] * data_utils.img_size[1] * CHANNELS
     epsilon = args.epsilon
-    V = torch.zeros(100, d).cuda()
+    V = torch.zeros(256, d).cuda()
     V.uniform_(-epsilon, epsilon)
     V = fro_projection(V, args.max_fro)
     print("fro norm of V: ", torch.pow(torch.norm(V, p='fro'), 2))
@@ -96,7 +96,7 @@ def train():
         start_epoch_time = time.time()
         for i, (X, y, batch_idx) in enumerate(train_loader):
             X, y = X.cuda(), y.cuda()
-            Ui = torch.zeros(X.shape[0], 100).cuda()
+            Ui = torch.zeros(X.shape[0], 256).cuda()
             Ui.uniform_(-epsilon, epsilon)
             Ui = l2_projection(Ui, V.detach().clone(), epsilon)
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
