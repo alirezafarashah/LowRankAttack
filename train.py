@@ -84,7 +84,7 @@ def train():
     epsilon = args.epsilon
     V = torch.zeros(100, d).cuda()
     V.uniform_(-epsilon, epsilon)
-    V = fro_projection(V, args.d)
+    V = fro_projection(V, args.max_fro)
     print("fro norm of V: ", torch.pow(torch.norm(V, p='fro'), 2))
     start_train_time = time.time()
     logger.info('Epoch \t Seconds')
@@ -129,7 +129,7 @@ def train():
             grad = torch.autograd.grad(loss, V)[0].detach()
             V = V.detach()
             V = V + v_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
-            V = fro_projection(V, args.d)
+            V = fro_projection(V, args.max_fro)
 
             U.append(Ui.detach().clone())
             data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
