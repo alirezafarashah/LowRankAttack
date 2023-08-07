@@ -28,7 +28,7 @@ class CIFAR10Utils(object):
         if batch_size_test is None:
             batch_size_test = batch_size
 
-        train_dataset = IndexedCIFAR10Dataset(self.cifar10_mean, self.cifar10_std, dir_, train=True, download=True,
+        train_dataset = IndexedCIFAR10Dataset(self.cifar10_mean, self.cifar10_std, dir_, train=False, download=True,
                                               random_transform=False)
 
         # storing this data to check on main
@@ -99,7 +99,7 @@ class CIFAR10Utils(object):
         return train_loader, test_loader, robust_test_loader, valid_loader, train_idx, valid_idx
 
     def get_eval_dataset(self, dir_):
-        return IndexedCIFAR10Dataset(self.cifar10_mean, self.cifar10_std, dir_, train=True, download=True,
+        return IndexedCIFAR10Dataset(self.cifar10_mean, self.cifar10_std, dir_, train=False, download=True,
                                      random_transform=False)
 
 
@@ -153,7 +153,7 @@ class CIFAR100Utils(object):
         if batch_size_test is None:
             batch_size_test = batch_size
 
-        train_dataset = IndexedCIFAR100Dataset(self.dset_mean, self.dset_std, dir_, train=True, download=True,
+        train_dataset = IndexedCIFAR100Dataset(self.dset_mean, self.dset_std, dir_, train=False, download=True,
                                                random_transform=False)
 
         # storing this data to check on main
@@ -224,7 +224,7 @@ class CIFAR100Utils(object):
         return train_loader, test_loader, robust_test_loader, valid_loader, train_idx, valid_idx
 
     def get_eval_dataset(self, dir_):
-        return IndexedCIFAR100Dataset(self.dset_mean, self.dset_std, dir_, train=True, download=True,
+        return IndexedCIFAR100Dataset(self.dset_mean, self.dset_std, dir_, train=False, download=True,
                                       random_transform=False)
 
 
