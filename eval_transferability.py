@@ -13,6 +13,7 @@ from torch.utils.data import Subset
 from architectures.preact_resnet import PreActResNet18
 from architectures.wide_resnet import Wide_ResNet
 from architectures.resnet import ResNet50, ResNet18
+from architectures.vgg16 import VGG16
 
 from utils.data_utils import CIFAR10Utils, CIFAR100Utils
 from utils.attack_utils import *
@@ -51,14 +52,17 @@ def eval_transferability():
         model = ResNet18(num_classes=args.num_classes).cuda()
     elif args.architecture.upper() in 'RESNET50':
         model = ResNet50(num_classes=args.num_classes).cuda()
-
+    elif args.architecture.upper() in 'VGG16':
+        model = VGG16().cuda()
     else:
         raise ValueError('Unknown architecture.')
 
     model_path = args.model_path
-    if not os.path.exists(model_path):
-        raise ValueError('Pretrained model does not exist.')
-    model.load_state_dict(torch.load(model_path))
+    if args.architecture.upper() not in 'VGG16':
+        if not os.path.exists(model_path):
+            raise ValueError('Pretrained model does not exist.')
+        model.load_state_dict(torch.load(model_path))
+    logger.info("Pretrained model loaded successfully.")
     logger.info("Pretrained model loaded successfully.")
     print("Pretrained model loaded successfully.")
     model.eval()
