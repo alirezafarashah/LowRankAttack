@@ -119,12 +119,13 @@ def train():
                 Ui = Ui + u_rate * torch.div(U_grad, torch.linalg.vector_norm(U_grad, dim=1).unsqueeze(1))
                 # Project onto l2 ball
                 Ui = l2_projection(Ui, V_copy, epsilon)
-                Ui = Ui.detach()
 
                 # V optimization step
                 V = V.detach()
                 V = V + v_rate * torch.div(V_grad, torch.linalg.vector_norm(V_grad, dim=1).unsqueeze(1))
                 V = fro_projection(V, args.max_fro)
+                V = V.detach()
+                Ui = Ui.detach()
 
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"2. test loss after train : {test_loss}, test acc: {test_acc}")
