@@ -94,7 +94,7 @@ def train():
         U = []
         data = []
         start_epoch_time = time.time()
-        for i, (X, y, batch_idx) in enumerate(train_loader):
+        for i, (X, y, batch_idx) in enumerate(test_loader):
             X, y = X.cuda(), y.cuda()
             Ui = torch.zeros(X.shape[0], args.v_dim).cuda()
             Ui.uniform_(-epsilon / 255.0, epsilon / 255.0)
