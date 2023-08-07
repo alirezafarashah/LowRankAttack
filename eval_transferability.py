@@ -57,9 +57,10 @@ def eval_transferability():
         raise ValueError('Unknown architecture.')
 
     model_path = args.model_path
-    if not os.path.exists(model_path) and args.architecture.upper() not in 'VGG16':
-        raise ValueError('Pretrained model does not exist.')
-    model.load_state_dict(torch.load(model_path))
+    if args.architecture.upper() not in 'VGG16':
+        if not os.path.exists(model_path):
+            raise ValueError('Pretrained model does not exist.')
+        model.load_state_dict(torch.load(model_path))
     logger.info("Pretrained model loaded successfully.")
     print("Pretrained model loaded successfully.")
     model.eval()
