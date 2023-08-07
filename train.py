@@ -101,8 +101,8 @@ def train():
             Ui.uniform_(-epsilon / 64.0, epsilon / 64.0)
             Ui = l2_projection(Ui, V.detach().clone(), epsilon)
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
-            print(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
-            logger.info(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
+            print(f"1. test loss before train : {test_loss}, test acc: {test_acc}")
+            logger.info(f"1. test loss before train : {test_loss}, test acc: {test_acc}")
 
             for j in range(inner_steps):
                 V.requires_grad = True
@@ -127,8 +127,8 @@ def train():
                 V = fro_projection(V, args.max_fro)
 
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
-            print(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
-            logger.info(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
+            print(f"2. test loss after train : {test_loss}, test acc: {test_acc}")
+            logger.info(f"2. test loss after train : {test_loss}, test acc: {test_acc}")
 
             U.append(Ui.detach().clone())
             data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
@@ -166,9 +166,6 @@ def eval_attack(model, V, U, data):
 
 
 def print_norms(model, V, Ui, X, y):
-    test_loss, test_acc = evaluate_batch(model, V, Ui, X, y)
-    print(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
-    logger.info(f"3. test loss after train V: {test_loss}, test acc: {test_acc}")
     print("4. l2 norm of Ui: ", torch.pow(torch.linalg.vector_norm(Ui), 2))
     logger.info("4. l2 norm of Ui: %.4f", torch.pow(torch.linalg.vector_norm(Ui), 2).item())
     print("5. l2 norm of UiV: ",
@@ -183,8 +180,8 @@ def print_norms(model, V, Ui, X, y):
 
 
 def validation(model, V, U, Ui, data):
-    print("test after 50 steps:")
-    logger.info("test after 50 steps:")
+    print("test after 20 steps:")
+    logger.info("test after 20 steps:")
     test_loss, test_acc = evaluate_low_rank(model, V, U, data)
     logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
     print(f"test loss: {test_loss}, test acc: {test_acc}")
