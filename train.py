@@ -136,7 +136,7 @@ def train():
             V = V.detach()
             Ui = Ui.detach()
             print_norms(model, V.detach().clone(), Ui.detach().clone(), X, y)
-            if args.validation and (i + 1) % 50 == 0:
+            if args.validation and (i + 1) % 20 == 0:
                 validation(model, V.detach().clone(), U, Ui.detach().clone(), data)
             if epoch == args.epochs - 1:
                 final_U.append((Ui.detach().clone(), batch_idx))
