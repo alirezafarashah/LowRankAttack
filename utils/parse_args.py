@@ -35,6 +35,7 @@ def get_train_args():
     parser.add_argument('--u-rate', default=1e-1, type=float, help='Learning rate for Ui optimization')
     parser.add_argument('--v-rate', default=1e-2, type=float, help='Learning rate for V optimization')
     parser.add_argument('--max-fro', default=3, type=float, help='Maximum frobenius norm of V')
+    parser.add_argument('--v-dim', default=100, type=int, help='Dimension of V')
     return parser.parse_args()
 
 
