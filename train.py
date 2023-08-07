@@ -124,7 +124,7 @@ def train():
                 V = V.detach()
                 V = V + v_rate * torch.div(V_grad, torch.linalg.vector_norm(V_grad, dim=1).unsqueeze(1))
                 V = fro_projection(V, args.max_fro)
-                V.grad.zerp_()
+                V.grad.zero_()
                 Ui.grad.zero_()
                 V = V.detach()
                 Ui = Ui.detach()
