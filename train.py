@@ -97,7 +97,7 @@ def train():
         for i, (X, y, batch_idx) in enumerate(test_loader):
             X, y = X.cuda(), y.cuda()
             Ui = torch.zeros(X.shape[0], args.v_dim).cuda()
-            Ui.uniform_(-epsilon / 255.0, epsilon / 255.0)
+            Ui.uniform_(-epsilon / 64.0, epsilon / 64.0)
             Ui = l2_projection(Ui, V.detach().clone(), epsilon)
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
