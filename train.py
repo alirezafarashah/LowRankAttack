@@ -47,7 +47,7 @@ def train():
     torch.cuda.manual_seed(args.seed)
 
     valid_size = 0
-    (train_loader, test_loader, robust_test_loader,
+    (test_loader, _loader, robust_test_loader,
      valid_loader, train_idx, valid_idx) = data_utils.get_indexed_loaders(args.data_dir,
                                                                           args.batch_size,
                                                                           valid_size=valid_size)
@@ -94,7 +94,7 @@ def train():
         U = []
         data = []
         start_epoch_time = time.time()
-        for i, (X, y, batch_idx) in enumerate(test_loader):
+        for i, (X, y, batch_idx) in enumerate(train_loader):
             X, y = X.cuda(), y.cuda()
             Ui = torch.zeros(X.shape[0], args.v_dim).cuda()
             Ui.uniform_(-epsilon / 255.0, epsilon / 255.0)
