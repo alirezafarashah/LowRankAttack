@@ -104,8 +104,8 @@ def train():
             print(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
             logger.info(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
 
-            V.requires_grad = True
             for j in range(inner_steps):
+                V.requires_grad = True
                 Ui.requires_grad = True
                 output = model(X + torch.matmul(Ui, V).reshape(X.shape))
                 loss = F.cross_entropy(output, y)
