@@ -47,7 +47,7 @@ def train():
     torch.cuda.manual_seed(args.seed)
 
     valid_size = 0
-    (test_loader, _loader, robust_test_loader,
+    (test_loader, eval_loader, robust_test_loader,
      valid_loader, train_idx, valid_idx) = data_utils.get_indexed_loaders(args.data_dir,
                                                                           args.batch_size,
                                                                           valid_size=valid_size)
@@ -73,7 +73,7 @@ def train():
     logger.info("Pretrained model loaded successfully.")
     print("Pretrained model loaded successfully.")
     model.eval()
-    test_loss, test_acc = evaluate_model(model, test_loader)
+    test_loss, test_acc = evaluate_model(model, eval_loader)
     logger.info(f"Evaluate model on clean dataset, test loss: {test_loss}, test acc: {test_acc}")
     print(f"Evaluate model on clean dataset, test loss: {test_loss}, test acc: {test_acc}")
 
