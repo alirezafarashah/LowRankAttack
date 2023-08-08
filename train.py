@@ -97,49 +97,47 @@ def train():
         start_epoch_time = time.time()
         for i, (X, y, batch_idx) in enumerate(test_loader):
             X, y = X.cuda(), y.cuda()
-            Ui = torch.zeros(X.shape[0], args.v_dim).cuda()
+            Ui = torch.zeros(X.shape[0], d).cuda()
             Ui.uniform_(-epsilon / 256.0, epsilon / 256.0)
-            Ui = l2_projection(Ui, V.detach().clone(), epsilon)
-            test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
-            print(f"1. test loss before train : {test_loss}, test acc: {test_acc}")
-            logger.info(f"1. test loss before train : {test_loss}, test acc: {test_acc}")
+            Ui = l2_project(Ui, epsilon)
+            # test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
+            # print(f"1. test loss before train : {test_loss}, test acc: {test_acc}")
+            # logger.info(f"1. test loss before train : {test_loss}, test acc: {test_acc}")
 
             for j in range(inner_steps):
-                V.requires_grad = True
+                # V.requires_grad = True
                 Ui.requires_grad = True
-                output = model(X + torch.matmul(Ui, V).reshape(X.shape))
+                output = model(X + Ui.reshape(X.shape))
                 loss = F.cross_entropy(output, y)
-                U_grad, V_grad = torch.autograd.grad(loss, [Ui, V])[0:2]
+                U_grad = torch.autograd.grad(loss, Ui)[0]
                 U_grad = U_grad.detach()
-                V_grad = V_grad.detach()
 
                 # Ui optimizations step
                 Ui = Ui.detach()
-                V_copy = V.detach().clone()
                 Ui = Ui + u_rate * torch.div(U_grad, torch.linalg.vector_norm(U_grad, dim=1).unsqueeze(1))
                 # Project onto l2 ball
-                Ui = l2_projection(Ui, V_copy, epsilon)
+                Ui = l2_project(Ui, epsilon)
 
                 # V optimization step
-                V = V.detach()
-                V = V + v_rate * torch.div(V_grad, torch.linalg.vector_norm(V_grad, dim=1).unsqueeze(1))
-                V = fro_projection(V, args.max_fro)
-                V = V.detach()
+                # V = V.detach()
+                # V = V + v_rate * torch.div(V_grad, torch.linalg.vector_norm(V_grad, dim=1).unsqueeze(1))
+                # V = fro_projection(V, args.max_fro)
+                # V = V.detach()
                 Ui = Ui.detach()
 
-            test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
-            print(f"2. test loss after train : {test_loss}, test acc: {test_acc}")
-            logger.info(f"2. test loss after train : {test_loss}, test acc: {test_acc}")
+            # test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
+            # print(f"2. test loss after train : {test_loss}, test acc: {test_acc}")
+            # logger.info(f"2. test loss after train : {test_loss}, test acc: {test_acc}")
 
             U.append(Ui.detach().clone())
             data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
-            V = V.detach()
-            Ui = Ui.detach()
-            print_norms(model, V.detach().clone(), Ui.detach().clone(), X, y)
-            if args.validation and (i + 1) % 20 == 0:
-                validation(model, V.detach().clone(), U, Ui.detach().clone(), data)
-            if epoch == args.epochs - 1:
-                final_U.append((Ui.detach().clone(), batch_idx))
+            # V = V.detach()
+            # Ui = Ui.detach()
+            # print_norms(model, V.detach().clone(), Ui.detach().clone(), X, y)
+            # if args.validation and (i + 1) % 20 == 0:
+            #     validation(model, V.detach().clone(), U, Ui.detach().clone(), data)
+            # if epoch == args.epochs - 1:
+            #     final_U.append((Ui.detach().clone(), batch_idx))
 
         epoch_time = time.time()
         print(epoch, epoch_time - start_epoch_time)
@@ -153,13 +151,13 @@ def train():
     print('Total train time: %.4f minutes', (train_time - start_train_time) / 60)
 
     # Evaluation final tensor
-    eval_attack(model, V, U, data)
+    eval_attack(model, U, data)
 
 
-def eval_attack(model, V, U, data):
+def eval_attack(model, U, data):
     logger.info("Training finished, starting evaluation.")
     print('Training finished, starting evaluation.')
-    test_loss, test_acc = evaluate_low_rank(model, V, U, data)
+    test_loss, test_acc = evaluate_low_rank(model, U, data)
     logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
     print(f"test loss: {test_loss}, test acc: {test_acc}")
     logger.info('Finished evaluating.')
