@@ -20,24 +20,15 @@ def l2_projection(Ui, V, epsilon):
     factor = torch.max(ones, UV_norm / epsilon_tensor).unsqueeze(1)
     return torch.div(Ui, factor)
 
-def l2_project(X, e):
-    shape = X.shape
-    X = torch.flatten(X, start_dim=1)
-    X_norm = torch.linalg.vector_norm(X, dim=1)
-    epsilon_tensor = torch.full((X.shape[0],), e).cuda()
-    ones = torch.ones_like(epsilon_tensor).cuda()
-    factor = torch.max(ones, X_norm / epsilon_tensor).unsqueeze(1)
-    return torch.div(X, factor).view(shape)
 
-
-def evaluate_low_rank(model, U, data):
+def evaluate_low_rank(model, V, U, data):
     test_loss = 0
     test_acc = 0
     n = 0
     with torch.no_grad():
         for i, (X, y) in enumerate(tqdm(data)):
             X, y = X.cuda(), y.cuda()
-            output = model(X + (U[i]).reshape(X.shape))
+            output = model(X + torch.matmul(U[i], V).reshape(X.shape))
             loss = F.cross_entropy(output, y)
             test_loss += loss.item() * y.size(0)
             test_acc += (output.max(1)[1] == y).sum().item()
@@ -72,4 +63,3 @@ def evaluate_model(model, test_loader):
             test_acc += (output.max(1)[1] == y).sum().item()
             n += y.size(0)
     return test_loss / n, test_acc / n
-
