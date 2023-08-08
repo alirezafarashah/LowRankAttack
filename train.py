@@ -162,8 +162,8 @@ def eval_attack(model, V, U, data):
     test_loss, test_acc = evaluate_low_rank(model, V, U, data)
     logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
     print(f"test loss: {test_loss}, test acc: {test_acc}")
-    logger.info('Finished evaluating final tensor.')
-    print('Finished evaluating final tensor.')
+    logger.info('Finished evaluating.')
+    print('Finished evaluating.')
 
 
 def print_norms(model, V, Ui, X, y):
