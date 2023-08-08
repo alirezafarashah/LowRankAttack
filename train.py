@@ -108,7 +108,7 @@ def train():
                 V.requires_grad = True
                 Ui.requires_grad = True
                 output = model(X + torch.matmul(Ui, V).reshape(X.shape))
-                loss = torch.max(torch.tensor(7.), F.cross_entropy(output, y))
+                loss = torch.min(torch.tensor(6.), F.cross_entropy(output, y))
                 U_grad, V_grad = torch.autograd.grad(loss, [Ui, V])[0:2]
                 U_grad = U_grad.detach()
                 V_grad = V_grad.detach()
