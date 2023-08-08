@@ -184,8 +184,8 @@ def print_norms(model, V, Ui, X, y):
 
 
 def validation(model, V, U, Ui, data):
-    print("test after 50 steps:")
-    logger.info("test after 50 steps:")
+    print("test after 20 steps:")
+    logger.info("test after 20 steps:")
     test_loss, test_acc = evaluate_low_rank(model, V, U, data)
     logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
     print(f"test loss: {test_loss}, test acc: {test_acc}")
