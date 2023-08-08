@@ -154,10 +154,10 @@ def train():
     eval_attack(model, U, data)
 
 
-def eval_attack(model, V, U, data):
+def eval_attack(model, U, data):
     logger.info("Training finished, starting evaluation.")
     print('Training finished, starting evaluation.')
-    test_loss, test_acc = evaluate_low_rank(model, V, U, data)
+    test_loss, test_acc = evaluate_low_rank(model, U, data)
     logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
     print(f"test loss: {test_loss}, test acc: {test_acc}")
     logger.info('Finished evaluating final tensor.')
