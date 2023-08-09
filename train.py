@@ -123,7 +123,7 @@ def train():
                 # V optimization step
                 V = V.detach()
                 V = V + v_rate * torch.div(V_grad, torch.linalg.vector_norm(V_grad, dim=1).unsqueeze(1))
-                V = fro_projection(V, args.max_fro)
+                # V = fro_projection(V, args.max_fro)
                 V = V.detach()
                 Ui = Ui.detach()
 
