@@ -82,9 +82,9 @@ def train():
     v_rate = args.v_rate
     d = data_utils.img_size[0] * data_utils.img_size[1] * CHANNELS
     epsilon = args.epsilon
-    V = torch.zeros(args.v_dim, d).cuda()
-    V.uniform_(0, epsilon / 16.0)
-    V = fro_projection(V, args.max_fro)
+    V = torch.ones(args.v_dim, d).cuda()
+    # V.uniform_(0, epsilon / 16.0)
+    # V = fro_projection(V, args.max_fro)
     print("fro norm of V: ", torch.pow(torch.norm(V, p='fro'), 2))
     start_train_time = time.time()
     logger.info('Epoch \t Seconds')
