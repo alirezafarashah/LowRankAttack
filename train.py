@@ -61,7 +61,7 @@ def train():
     elif args.architecture.upper() in 'RESNET50':
         model = ResNet50(num_classes=args.num_classes).cuda()
     elif args.architecture.upper() in 'VGG16':
-        model = VGG16()
+        model = VGG16().cuda()
     else:
         raise ValueError('Unknown architecture.')
 
