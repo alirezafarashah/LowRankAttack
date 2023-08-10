@@ -4,9 +4,11 @@ from tqdm import tqdm
 import numpy as np
 
 
-def fro_projection(V, d):
-    V_array = V.detach().cpu().numpy()
-    return torch.div(V, max(1, np.linalg.norm(V_array, ord='fro') / d))
+def fro_projection(V, Ui, d):
+    # V_array = V.detach().cpu().numpy()
+    # return torch.div(V, max(1, np.linalg.norm(V_array, ord='fro') / d))
+    factor = torch.max(torch.linalg.vector_norm(torch.matmul(Ui, V), dim=1))
+    return torch.div(V, max(1, factor))
 
 
 def clamp(X, lower_limit, upper_limit):
