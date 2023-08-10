@@ -120,16 +120,16 @@ def train():
             test_loss, test_acc = evaluate_batch(model, V_copy, Ui.detach().clone(), X, y)
             print(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
             logger.info(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
-
-            # V optimization step
-            V.requires_grad = True
-            Ui_copy = Ui.detach().clone()
-            output = model(X + torch.matmul(Ui_copy, V).reshape(X.shape))
-            loss = F.cross_entropy(output, y)
-            grad = torch.autograd.grad(loss, V)[0].detach()
-            V = V.detach()
-            V = V + v_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
-            V = fro_projection(V, args.max_fro)
+            if epoch != args.epochs - 1:
+                # V optimization step
+                V.requires_grad = True
+                Ui_copy = Ui.detach().clone()
+                output = model(X + torch.matmul(Ui_copy, V).reshape(X.shape))
+                loss = F.cross_entropy(output, y)
+                grad = torch.autograd.grad(loss, V)[0].detach()
+                V = V.detach()
+                V = V + v_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
+                V = fro_projection(V, args.max_fro)
 
             U.append(Ui.detach().clone())
             data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
