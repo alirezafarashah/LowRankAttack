@@ -21,6 +21,16 @@ def l2_projection(Ui, V, epsilon):
     return torch.div(Ui, factor)
 
 
+def l2_project(X, e):
+    shape = X.shape
+    X = torch.flatten(X, start_dim=1)
+    X_norm = torch.linalg.vector_norm(X, dim=1)
+    epsilon_tensor = torch.full((X.shape[0],), e).cuda()
+    ones = torch.ones_like(epsilon_tensor).cuda()
+    factor = torch.max(ones, X_norm / epsilon_tensor).unsqueeze(1)
+    return torch.div(X, factor).view(shape)
+
+
 def evaluate_low_rank(model, V, U, data):
     test_loss = 0
     test_acc = 0
