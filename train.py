@@ -84,7 +84,7 @@ def train():
     epsilon = args.epsilon
     V = torch.eye(args.v_dim, d).cuda()
     # V.uniform_(0,1)
-    # V = fro_projection(V, args.max_fro)
+    V = fro_projection(V, args.max_fro)
     print("fro norm of V: ", torch.pow(torch.norm(V, p='fro'), 2))
     start_train_time = time.time()
     logger.info('Epoch \t Seconds')
@@ -99,7 +99,7 @@ def train():
             X, y = X.cuda(), y.cuda()
             Ui = torch.zeros(X.shape[0], args.v_dim).cuda()
             Ui.uniform_(-epsilon / 256.0, epsilon / 256.0)
-            Ui = l2_project(Ui.detach().clone(), epsilon)
+            Ui = l2_projection(Ui.detach().clone(), V.detach().clone(), epsilon)
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"1. test loss before train : {test_loss}, test acc: {test_acc}")
             logger.info(f"1. test loss before train : {test_loss}, test acc: {test_acc}")
@@ -118,12 +118,12 @@ def train():
                 V_copy = V.detach().clone()
                 Ui = Ui + u_rate * torch.div(U_grad, torch.linalg.vector_norm(U_grad, dim=1).unsqueeze(1))
                 # Project onto l2 ball
-                Ui = l2_project(Ui.detach().clone(), epsilon)
+                Ui = l2_projection(Ui.detach().clone(), V_copy, epsilon)
 
                 # V optimization step
                 V = V.detach()
                 V = V + v_rate * torch.div(V_grad, torch.linalg.vector_norm(V_grad, dim=1).unsqueeze(1))
-                V = fro_projection(V, Ui)
+                V = fro_projection(V, args.max_fro)
                 V = V.detach()
                 Ui = Ui.detach()
 
