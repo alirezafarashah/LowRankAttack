@@ -84,7 +84,7 @@ def train():
     epsilon = args.epsilon
     V = torch.eye(args.v_dim, d).cuda()
     # V.uniform_(0,1)
-    # V = fro_projection(V, args.v_dim ** 0.5)
+    V = fro_projection(V, args.v_dim ** 0.5)
     print("fro norm of V: ", torch.pow(torch.norm(V, p='fro'), 2))
     start_train_time = time.time()
     logger.info('Epoch \t Seconds')
@@ -121,9 +121,9 @@ def train():
                 Ui = l2_projection(Ui, V_copy, epsilon)
 
                 # V optimization step
-                # V = V.detach()
-                # V = V + v_rate * torch.div(V_grad, torch.linalg.vector_norm(V_grad, dim=1).unsqueeze(1))
-                # V = fro_projection(V, args.v_dim ** 0.5)
+                V = V.detach()
+                V = V + v_rate * torch.div(V_grad, torch.linalg.vector_norm(V_grad, dim=1).unsqueeze(1))
+                V = fro_projection(V, args.v_dim ** 0.5)
                 V = V.detach()
                 Ui = Ui.detach()
 
