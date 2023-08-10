@@ -99,7 +99,7 @@ def train():
             X, y = X.cuda(), y.cuda()
             Ui = torch.zeros(X.shape[0], args.v_dim).cuda()
             Ui.uniform_(-epsilon / 256.0, epsilon / 256.0)
-            Ui = l2_project(Ui, epsilon)
+            Ui = l2_project(Ui.detach().clone(), epsilon)
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"1. test loss before train : {test_loss}, test acc: {test_acc}")
             logger.info(f"1. test loss before train : {test_loss}, test acc: {test_acc}")
@@ -118,7 +118,7 @@ def train():
                 V_copy = V.detach().clone()
                 Ui = Ui + u_rate * torch.div(U_grad, torch.linalg.vector_norm(U_grad, dim=1).unsqueeze(1))
                 # Project onto l2 ball
-                Ui = l2_project(Ui, epsilon)
+                Ui = l2_project(Ui.detach().clone(), epsilon)
 
                 # V optimization step
                 V = V.detach()
