@@ -4,7 +4,7 @@ from tqdm import tqdm
 import numpy as np
 
 
-def fro_projection(V, Ui):
+def fro_projection(V, d):
     V_array = V.detach().cpu().numpy()
     return torch.div(V, max(1, np.linalg.norm(V_array, ord='fro') / d))
 
