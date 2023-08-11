@@ -103,7 +103,7 @@ def train():
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"1. test loss before train : {test_loss}, test acc: {test_acc}")
             logger.info(f"1. test loss before train : {test_loss}, test acc: {test_acc}")
-            print(torch.mean(torch.linalg.vector_norm(X.reshape(X.shape[0], -1))))
+            print(torch.mean(torch.linalg.vector_norm(X.reshape(X.shape[0], -1),dim=1)))
             for j in range(inner_steps):
                 V.requires_grad = True
                 Ui.requires_grad = True
