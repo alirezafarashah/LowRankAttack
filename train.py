@@ -61,15 +61,15 @@ def train():
     elif args.architecture.upper() in 'RESNET50':
         model = ResNet50(num_classes=args.num_classes).cuda()
     elif args.architecture.upper() in 'VGG16':
-        model = VGG16()
+        model = VGG16().cuda()
     else:
         raise ValueError('Unknown architecture.')
 
     model_path = args.model_path
-    if not os.path.exists(model_path) and args.architecture.upper() not in 'VGG16':
-        raise ValueError('Pretrained model does not exist.')
-
-    model.load_state_dict(torch.load(model_path))
+    if args.architecture.upper() not in 'VGG16':
+        if not os.path.exists(model_path):
+            raise ValueError('Pretrained model does not exist.')
+        model.load_state_dict(torch.load(model_path))
     logger.info("Pretrained model loaded successfully.")
     print("Pretrained model loaded successfully.")
     model.eval()
@@ -120,7 +120,7 @@ def train():
                 # Project onto l2 ball
                 Ui = l2_projection(Ui.detach().clone(), V_copy, epsilon)
 
-                if epoch != args.epochs-1:
+                if epoch != args.epochs - 1:
                     # V optimization step
                     V = V.detach()
                     V = V + v_rate * torch.div(V_grad, torch.linalg.vector_norm(V_grad, dim=1).unsqueeze(1))
