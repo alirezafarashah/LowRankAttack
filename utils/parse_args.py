@@ -54,12 +54,16 @@ def get_eval_args():
     # Config paths
     parser.add_argument('--model-path', default='/kaggle/working/',
                         type=str, help='Pretrained model path')
-    parser.add_argument('--U-path', default='/kaggle/working/U.pt',
+    parser.add_argument('--U-path', default='None',
                         type=str, help='Path of trained U tensor')
     parser.add_argument('--V-path', default='/kaggle/working/V.pt',
                         type=str, help='Path of trained V tensor')
 
     parser.add_argument('--log-dir', default='/kaggle/working/',
                         type=str, help='Path to save the tensor V')
+
+    parser.add_argument('--epsilon', default=2.0, type=float)
+    parser.add_argument('--u-rate', default=1e-1, type=float, help='Learning rate for Ui optimization')
+    parser.add_argument('--inner-steps', default=50, type=int, help='Number of steps to optimize Ui')
 
     return parser.parse_args()

@@ -21,6 +21,56 @@ from utils.parse_args import get_eval_args
 logger = logging.getLogger(__name__)
 
 
+def eval_with_existing_U(U, V, model, eval_dataset):
+    test_loss = 0
+    test_acc = 0
+    n = 0
+    with torch.no_grad():
+        for Ui, batch_idx in tqdm(U):
+            my_subset = Subset(eval_dataset, batch_idx)
+            loader = DataLoader(my_subset, batch_size=128)
+            X, y, idx = next(iter(loader))
+            X, y = X.cuda(), y.cuda()
+            output = model(X + torch.matmul(Ui, V).reshape(X.shape))
+            loss = F.cross_entropy(output, y)
+            test_loss += loss.item() * y.size(0)
+            test_acc += (output.max(1)[1] == y).sum().item()
+            n += y.size(0)
+        test_loss = test_loss / n
+        test_acc = test_acc / n
+        print(f"test loss on U and V: {test_loss}, test acc: {test_acc}")
+        logger.info(f"test loss on U and V: {test_loss}, test acc: {test_acc}")
+
+
+def eval_with_calculating_U(V, model, test_loader, args):
+    epsilon = args.epsilon
+    u_rate = args.u_rate
+    data = []
+    U = []
+    for i, (X, y, batch_idx) in enumerate(test_loader):
+        X, y = X.cuda(), y.cuda()
+        Ui = torch.zeros(X.shape[0], V.shape[0]).cuda()
+        Ui.uniform_(-epsilon / 16.0, epsilon / 16.0)
+        Ui = l2_projection(Ui, V.detach().clone(), epsilon)
+        # Ui optimization step
+        V_copy = V.detach().clone()
+        for j in range(args.inner_steps):
+            Ui.requires_grad = True
+            output = model(X + torch.matmul(Ui, V_copy).reshape(X.shape))
+            loss = F.cross_entropy(output, y)
+            grad = torch.autograd.grad(loss, Ui)[0].detach()
+            Ui = Ui.detach()
+            Ui = Ui + u_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
+            # Project onto l2 ball
+            Ui = l2_projection(Ui, V_copy, epsilon)
+            Ui = Ui.detach()
+        U.append(Ui.detach().clone())
+        data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
+    test_loss, test_acc = evaluate_low_rank(model, V.detach().clone(), U, data)
+    logger.info(f"test loss: {test_loss}, test acc: {test_acc}")
+    print(f"test loss: {test_loss}, test acc: {test_acc}")
+
+
 def eval_transferability():
     args = get_eval_args()
     print(args)
@@ -70,26 +120,13 @@ def eval_transferability():
 
     logger.info("starting evaluation.")
     print('starting evaluation.')
-    U = torch.load(args.U_path)
+
     V = torch.load(args.V_path)
-    test_loss = 0
-    test_acc = 0
-    n = 0
-    with torch.no_grad():
-        for Ui, batch_idx in tqdm(U):
-            my_subset = Subset(eval_dataset, batch_idx)
-            loader = DataLoader(my_subset, batch_size=128)
-            X, y, idx = next(iter(loader))
-            X, y = X.cuda(), y.cuda()
-            output = model(X + torch.matmul(Ui, V).reshape(X.shape))
-            loss = F.cross_entropy(output, y)
-            test_loss += loss.item() * y.size(0)
-            test_acc += (output.max(1)[1] == y).sum().item()
-            n += y.size(0)
-        test_loss = test_loss / n
-        test_acc = test_acc / n
-        print(f"test loss on U and V: {test_loss}, test acc: {test_acc}")
-        logger.info(f"test loss on U and V: {test_loss}, test acc: {test_acc}")
+    if args.U_path != 'None' and os.path.exists(args.U_path):
+        U = torch.load(args.U_path)
+        eval_with_existing_U(U, V, model, eval_dataset)
+    else:
+        eval_with_calculating_U(V, model, eval_loader, args)
 
 
 if __name__ == "__main__":
