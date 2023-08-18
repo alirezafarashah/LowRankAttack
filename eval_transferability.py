@@ -47,7 +47,7 @@ def eval_with_calculating_U(V, model, test_loader, args):
     u_rate = args.u_rate
     data = []
     U = []
-    for i, (X, y, batch_idx) in enumerate(test_loader):
+    for i, (X, y, batch_idx) in enumerate(tqdm(test_loader)):
         X, y = X.cuda(), y.cuda()
         Ui = torch.zeros(X.shape[0], V.shape[0]).cuda()
         Ui.uniform_(-epsilon / 16.0, epsilon / 16.0)
