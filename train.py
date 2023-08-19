@@ -137,6 +137,7 @@ def train():
             Ui = Ui.detach()
             print_norms(model, V.detach().clone(), Ui.detach().clone(), X, y)
             if args.validation and (i + 1) % 50 == 0:
+                v_rate = 0.9 * v_rate
                 validation(model, V.detach().clone(), U, Ui.detach().clone(), data)
 
         epoch_time = time.time()
