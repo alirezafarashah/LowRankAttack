@@ -55,7 +55,7 @@ def evaluate_model(model, test_loader):
     test_acc = 0
     n = 0
     with torch.no_grad():
-        for i, (X, y) in enumerate(tqdm(test_loader)):
+        for i, (X, y, idx) in enumerate(tqdm(test_loader)):
             X, y = X.cuda(), y.cuda()
             output = model(X)
             loss = F.cross_entropy(output, y)
@@ -63,4 +63,3 @@ def evaluate_model(model, test_loader):
             test_acc += (output.max(1)[1] == y).sum().item()
             n += y.size(0)
     return test_loss / n, test_acc / n
-

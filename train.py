@@ -47,7 +47,7 @@ def train():
     torch.cuda.manual_seed(args.seed)
 
     valid_size = 0
-    (test_loader, eval_loader, robust_test_loader,
+    (train_loader, test_loader, robust_test_loader,
      valid_loader, train_idx, valid_idx) = data_utils.get_indexed_loaders(args.data_dir,
                                                                           args.batch_size,
                                                                           valid_size=valid_size)
@@ -73,7 +73,7 @@ def train():
     logger.info("Pretrained model loaded successfully.")
     print("Pretrained model loaded successfully.")
     model.eval()
-    test_loss, test_acc = evaluate_model(model, eval_loader)
+    test_loss, test_acc = evaluate_model(model, test_loader)
     logger.info(f"Evaluate model on clean dataset, test loss: {test_loss}, test acc: {test_acc}")
     print(f"Evaluate model on clean dataset, test loss: {test_loss}, test acc: {test_acc}")
 
@@ -83,7 +83,7 @@ def train():
     d = data_utils.img_size[0] * data_utils.img_size[1] * CHANNELS
     epsilon = args.epsilon
     V = torch.zeros(args.v_dim, d).cuda()
-    V.uniform_(0, args.init_v)
+    V.uniform_(-args.init_v, args.init_v)
     V = fro_projection(V, args.max_fro)
     print("fro norm of V: ", torch.pow(torch.norm(V, p='fro'), 2))
     start_train_time = time.time()
@@ -94,7 +94,7 @@ def train():
         U = []
         data = []
         start_epoch_time = time.time()
-        for i, (X, y, batch_idx) in enumerate(test_loader):
+        for i, (X, y, batch_idx) in enumerate(train_loader):
             X, y = X.cuda(), y.cuda()
             Ui = torch.zeros(X.shape[0], args.v_dim).cuda()
             Ui.uniform_(-epsilon / 16.0, epsilon / 16.0)
@@ -136,10 +136,8 @@ def train():
             V = V.detach()
             Ui = Ui.detach()
             print_norms(model, V.detach().clone(), Ui.detach().clone(), X, y)
-            if args.validation and (i + 1) % 20 == 0:
+            if args.validation and (i + 1) % 50 == 0:
                 validation(model, V.detach().clone(), U, Ui.detach().clone(), data)
-            if epoch == args.epochs - 1:
-                final_U.append((Ui.detach().clone(), batch_idx))
 
         epoch_time = time.time()
         print(epoch, epoch_time - start_epoch_time)
@@ -148,6 +146,40 @@ def train():
     if not os.path.exists(args.save_path):
         os.makedirs(args.save_path)
     torch.save(V, args.save_path + "V.pt")
+
+    print("start training U for test set")
+    logger.info("start training U for test set")
+    U = []
+    data = []
+    for i, (X, y, batch_idx) in enumerate(test_loader):
+        X, y = X.cuda(), y.cuda()
+        Ui = torch.zeros(X.shape[0], args.v_dim).cuda()
+        Ui.uniform_(-epsilon / 16.0, epsilon / 16.0)
+        Ui = l2_projection(Ui, V.detach().clone(), epsilon)
+        test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
+        print(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
+        logger.info(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
+
+        # Ui optimization step
+        V.requires_grad = False
+        V_copy = V.detach().clone()
+        for j in range(inner_steps):
+            Ui.requires_grad = True
+            output = model(X + torch.matmul(Ui, V_copy).reshape(X.shape))
+            loss = F.cross_entropy(output, y)
+            grad = torch.autograd.grad(loss, Ui)[0].detach()
+            Ui = Ui.detach()
+            Ui = Ui + u_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
+            # Project onto l2 ball
+            Ui = l2_projection(Ui, V_copy, epsilon)
+            Ui = Ui.detach()
+        test_loss, test_acc = evaluate_batch(model, V_copy, Ui.detach().clone(), X, y)
+        print(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
+        logger.info(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
+        final_U.append((Ui.detach().clone(), batch_idx))
+        U.append(Ui.detach().clone())
+        data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
+
     torch.save(final_U, args.save_path + "U.pt")
     logger.info('Total train time: %.4f minutes', (train_time - start_train_time) / 60)
     print('Total train time: %.4f minutes', (train_time - start_train_time) / 60)
