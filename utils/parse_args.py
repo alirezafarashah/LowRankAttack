@@ -14,10 +14,10 @@ def get_train_args():
     # Training schedule settings
     parser.add_argument('--batch-size', default=128, type=int)
     parser.add_argument('--data-dir', default='/path/to/datasets/', type=str)
-    parser.add_argument('--epochs', default=10, type=int)
+    parser.add_argument('--epochs', default=3, type=int)
 
     # Adversarial training and evaluation settings
-    parser.add_argument('--epsilon', default=8, type=float)
+    parser.add_argument('--epsilon', default=3, type=float)
     parser.add_argument('--validation', action='store_true',
                         help='Validate attack')
 
