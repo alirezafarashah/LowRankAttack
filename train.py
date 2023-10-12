@@ -104,8 +104,8 @@ def train():
             Ui.uniform_(-epsilon / 16.0, epsilon / 16.0)
             Ui = l2_projection(Ui, V.detach().clone(), epsilon)
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
-            print(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
-            logger.info(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
+            # print(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
+            # logger.info(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
 
             # Ui optimization step
             V.requires_grad = False
@@ -122,9 +122,9 @@ def train():
                 Ui = Ui.detach()
 
             test_loss, test_acc = evaluate_batch(model, V_copy, Ui.detach().clone(), X, y)
-            print(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
-            logger.info(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
-            # if epoch != args.epochs - 1:
+            # print(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
+            # logger.info(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
+
             # V optimization step
             V.requires_grad = True
             Ui_copy = Ui.detach().clone()
@@ -162,8 +162,8 @@ def train():
         Ui.uniform_(-epsilon / 16.0, epsilon / 16.0)
         Ui = l2_projection(Ui, V.detach().clone(), epsilon)
         test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
-        print(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
-        logger.info(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
+        # print(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
+        # logger.info(f"1. test loss before train Ui: {test_loss}, test acc: {test_acc}")
 
         # Ui optimization step
         V.requires_grad = False
@@ -179,8 +179,8 @@ def train():
             Ui = l2_projection(Ui, V_copy, epsilon)
             Ui = Ui.detach()
         test_loss, test_acc = evaluate_batch(model, V_copy, Ui.detach().clone(), X, y)
-        print(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
-        logger.info(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
+        # print(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
+        # logger.info(f"2. test loss after train Ui and before train V: {test_loss}, test acc: {test_acc}")
         final_U.append((Ui.detach().clone(), batch_idx))
         U.append(Ui.detach().clone())
         data.append((X.to(torch.device("cpu")), y.to(torch.device("cpu"))))
