@@ -37,6 +37,7 @@ def get_train_args():
     parser.add_argument('--max-fro', default=3, type=float, help='Maximum frobenius norm of V')
     parser.add_argument('--v-dim', default=100, type=int, help='Dimension of V')
     parser.add_argument('--init-v', default=0.05, type=float, help='initial value of V')
+    parser.add_argument('--init-u', default=0.05, type=float, help='initial value of U')
     return parser.parse_args()
 
 
