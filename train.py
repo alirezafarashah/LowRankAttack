@@ -10,6 +10,7 @@ import torch.nn.functional as F
 from architectures.preact_resnet import PreActResNet18
 from architectures.vgg16 import VGG16
 from architectures.wide_resnet import Wide_ResNet
+from architectures.models import ResNet20, ResNet56, VGG16
 from architectures.resnet import ResNet50, ResNet18
 
 from utils.data_utils import CIFAR10Utils, CIFAR100Utils
@@ -58,22 +59,26 @@ def train():
         model = PreActResNet18(num_classes=args.num_classes).cuda()
     elif args.architecture.upper() in 'RESNET18':
         model = ResNet18(num_classes=args.num_classes).cuda()
+    elif args.architecture.upper() in 'RESNET20':
+        model = ResNet20().cuda()
     elif args.architecture.upper() in 'RESNET50':
         model = ResNet50(num_classes=args.num_classes).cuda()
+    elif args.architecture.upper() in 'RESNET56':
+        model = ResNet56().cuda()
     elif args.architecture.upper() in 'VGG16':
         model = VGG16().cuda()
     else:
         raise ValueError('Unknown architecture.')
 
     model_path = args.model_path
-    if args.architecture.upper() not in 'VGG16':
+    if args.architecture.upper() not in ['VGG16', 'RESNET20', 'RESNET56']:
         if not os.path.exists(model_path):
             raise ValueError('Pretrained model does not exist.')
         model.load_state_dict(torch.load(model_path))
     logger.info("Pretrained model loaded successfully.")
     print("Pretrained model loaded successfully.")
     model.eval()
-    test_loss, test_acc = evaluate_model(model, eval_loader)
+    test_loss, test_acc = evaluate_model(model, test_loader)
     logger.info(f"Evaluate model on clean dataset, test loss: {test_loss}, test acc: {test_acc}")
     print(f"Evaluate model on clean dataset, test loss: {test_loss}, test acc: {test_acc}")
 
@@ -119,7 +124,6 @@ def train():
                 Ui = Ui + u_rate * torch.div(U_grad, torch.linalg.vector_norm(U_grad, dim=1).unsqueeze(1))
                 # Project onto l2 ball
                 Ui = l2_projection(Ui.detach().clone(), V_copy, epsilon)
-
                 if epoch != args.epochs - 1:
                     # V optimization step
                     V = V.detach()
