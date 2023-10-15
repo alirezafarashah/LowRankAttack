@@ -117,17 +117,17 @@ def train():
                 U_grad, V_grad = torch.autograd.grad(loss, [Ui, V])[0:2]
                 U_grad = U_grad.detach()
                 V_grad = V_grad.detach()
-
                 # Ui optimizations step
                 Ui = Ui.detach()
                 V_copy = V.detach().clone()
                 Ui = Ui + u_rate * torch.div(U_grad, torch.linalg.vector_norm(U_grad, dim=1).unsqueeze(1))
                 # Project onto l2 ball
                 Ui = l2_projection(Ui.detach().clone(), V_copy, epsilon)
-                # V optimization step
-                V = V.detach()
-                V = V + v_rate * torch.div(V_grad, torch.linalg.vector_norm(V_grad, dim=1).unsqueeze(1))
-                V = fro_projection(V, args.max_fro)
+                if args.epochs == 1 or epoch != args.epochs - 1:
+                    # V optimization step
+                    V = V.detach()
+                    V = V + v_rate * torch.div(V_grad, torch.linalg.vector_norm(V_grad, dim=1).unsqueeze(1))
+                    V = fro_projection(V, args.max_fro)
                 V = V.detach()
                 Ui = Ui.detach()
 
