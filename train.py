@@ -124,9 +124,9 @@ def train():
                 # Project onto l2 ball
                 Ui = l2_projection(Ui.detach().clone(), V_copy, epsilon)
                 # V optimization step
-                V = V.detach()
-                V = V + v_rate * torch.div(V_grad, torch.linalg.vector_norm(V_grad, dim=1).unsqueeze(1))
-                V = fro_projection(V, args.max_fro)
+                # V = V.detach()
+                # V = V + v_rate * torch.div(V_grad, torch.linalg.vector_norm(V_grad, dim=1).unsqueeze(1))
+                # V = fro_projection(V, args.max_fro)
                 V = V.detach()
                 Ui = Ui.detach()
 
