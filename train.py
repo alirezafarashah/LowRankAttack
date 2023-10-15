@@ -109,30 +109,40 @@ def train():
             print(f"1. test loss before train : {test_loss}, test acc: {test_acc}")
             logger.info(f"1. test loss before train : {test_loss}, test acc: {test_acc}")
             print(torch.mean(torch.linalg.vector_norm(X.reshape(X.shape[0], -1), dim=1)))
-            for j in range(inner_steps):
-                V.requires_grad = True
-                Ui.requires_grad = True
-                output = model(X + torch.matmul(Ui, V).reshape(X.shape))
-                loss = F.cross_entropy(output, y)
-                U_grad, V_grad = torch.autograd.grad(loss, [Ui, V])[0:2]
-                U_grad = U_grad.detach()
-                V_grad = V_grad.detach()
-                # Ui optimizations step
-                Ui = Ui.detach()
+            if epoch == args.epochs - 1 and args.epochs != 1:
+                V.requires_grad = False
                 V_copy = V.detach().clone()
-                Ui = Ui + u_rate * torch.div(U_grad, torch.linalg.vector_norm(U_grad, dim=1).unsqueeze(1))
-                # Project onto l2 ball
-                Ui = l2_projection(Ui.detach().clone(), V_copy, epsilon)
-                if epoch == args.epochs - 1 and args.epochs != 1:
+                for j in range(inner_steps):
+                    Ui.requires_grad = True
+                    output = model(X + torch.matmul(Ui, V_copy).reshape(X.shape))
+                    loss = F.cross_entropy(output, y)
+                    grad = torch.autograd.grad(loss, Ui)[0].detach()
+                    Ui = Ui.detach()
+                    Ui = Ui + u_rate * torch.div(grad, torch.linalg.vector_norm(grad, dim=1).unsqueeze(1))
+                    # Project onto l2 ball
+                    Ui = l2_projection(Ui, V_copy, epsilon)
+                    Ui = Ui.detach()
+            else:
+                for j in range(inner_steps):
+                    V.requires_grad = True
+                    Ui.requires_grad = True
+                    output = model(X + torch.matmul(Ui, V).reshape(X.shape))
+                    loss = F.cross_entropy(output, y)
+                    U_grad, V_grad = torch.autograd.grad(loss, [Ui, V])[0:2]
+                    U_grad = U_grad.detach()
+                    V_grad = V_grad.detach()
+                    # Ui optimizations step
+                    Ui = Ui.detach()
+                    V_copy = V.detach().clone()
+                    Ui = Ui + u_rate * torch.div(U_grad, torch.linalg.vector_norm(U_grad, dim=1).unsqueeze(1))
+                    # Project onto l2 ball
+                    Ui = l2_projection(Ui.detach().clone(), V_copy, epsilon)
+                    # V optimization step
+                    V = V.detach()
+                    V = V + v_rate * torch.div(V_grad, torch.linalg.vector_norm(V_grad, dim=1).unsqueeze(1))
+                    V = fro_projection(V, args.max_fro)
                     V = V.detach()
                     Ui = Ui.detach()
-                    continue
-                # V optimization step
-                V = V.detach()
-                V = V + v_rate * torch.div(V_grad, torch.linalg.vector_norm(V_grad, dim=1).unsqueeze(1))
-                V = fro_projection(V, args.max_fro)
-                V = V.detach()
-                Ui = Ui.detach()
 
             test_loss, test_acc = evaluate_batch(model, V.detach().clone(), Ui.detach().clone(), X, y)
             print(f"2. test loss after train : {test_loss}, test acc: {test_acc}")
