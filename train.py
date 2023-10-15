@@ -123,6 +123,8 @@ def train():
                 Ui = Ui + u_rate * torch.div(U_grad, torch.linalg.vector_norm(U_grad, dim=1).unsqueeze(1))
                 # Project onto l2 ball
                 Ui = l2_projection(Ui.detach().clone(), V_copy, epsilon)
+                if epoch == args.epochs - 1 and args.epochs != 1:
+                    continue
                 # V optimization step
                 V = V.detach()
                 V = V + v_rate * torch.div(V_grad, torch.linalg.vector_norm(V_grad, dim=1).unsqueeze(1))
