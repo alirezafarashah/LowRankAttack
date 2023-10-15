@@ -124,6 +124,8 @@ def train():
                 # Project onto l2 ball
                 Ui = l2_projection(Ui.detach().clone(), V_copy, epsilon)
                 if epoch == args.epochs - 1 and args.epochs != 1:
+                    V = V.detach()
+                    Ui = Ui.detach()
                     continue
                 # V optimization step
                 V = V.detach()
